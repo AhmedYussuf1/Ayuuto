@@ -1,8 +1,8 @@
-#Ayuuto
+# Ayuuto
 A Modern Community Savings & Mutual Aid Platform
 
 Ayuuto is a decentralized approach to rotating savings and credit associations (ROSCA). This application helps communities manage, track, and automate their collective savings goals with transparency and ease.
-##Features
+## Features
 - Circle Management: Create or join savings circles with trusted members.
 
 - Automated Tracking: Real-time dashboards showing who has paid and who is next in the rotation.
