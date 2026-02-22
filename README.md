@@ -16,9 +16,9 @@ Ayuuto is a **community savings (rotating savings / group savings)** prototype b
 
 ### 1) Install dependencies
  
-``npm install``
+```npm install```
 ###  2) Run the development server
-``npm run dev``
+```npm run dev```
 ###  2) Build for Production 
 
 ```npm run build```
