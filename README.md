@@ -15,7 +15,7 @@ Ayuuto is a **community savings (rotating savings / group savings)** prototype b
 ## Getting Started
 
 ### 1) Install dependencies
-```bash
+```bash``
 npm install
 ###  2) Run the development server
 ```npm run dev```
