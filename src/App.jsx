@@ -1,6 +1,5 @@
  
- import './App.css'
-import SignUpForm from "./pages/SignUpForm"
+ import SignUpForm from "./pages/SignUpForm"
 
 export default function App(){
   return(
