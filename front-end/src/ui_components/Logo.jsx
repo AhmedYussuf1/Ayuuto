@@ -1,5 +1,12 @@
 const Logo = ({logoSoruce})=>{
-    return(  <img className="img-fluid bg-danger" src={logoSoruce} alt="logo " />
+    return (<div className="ing-fluid" >
+        <img className="img-fluid  " style={{
+
+            maxHeight: "1000px", width: "auto",
+
+        }}
+            src={logoSoruce} alt="logo " /> </div>
+
 )
 }
 export default Logo;
