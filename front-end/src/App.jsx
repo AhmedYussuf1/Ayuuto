@@ -4,7 +4,7 @@ import SignUpPage from "./pages/SignUpPage";
 import LandingPage from "./pages/LandingPage";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import DashBoard from "./DashBoard";
-import LoginPage from "./LogInPage";
+import LoginPage from "./pages/LoginPage";
 
 
 

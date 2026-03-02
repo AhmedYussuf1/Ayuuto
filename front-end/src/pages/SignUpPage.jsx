@@ -2,7 +2,7 @@
  import { handleSignUp } from '../logicCode/Utility';
  import { useNavigate } from "react-router-dom";
 import BackBtn from '../ui_components/BackBtn';
-import LoginPage from '../LogInPage';
+import LoginPage from './LoginPage';
 import { Link } from "react-router-dom";
 
 export default function SignUpPage(){
