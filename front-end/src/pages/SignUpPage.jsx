@@ -1,6 +1,9 @@
  import Form from 'react-bootstrap/Form';
  import { handleSignUp } from '../logicCode/Utility';
  import { useNavigate } from "react-router-dom";
+import BackBtn from '../ui_components/BackBtn';
+import LoginPage from '../LogInPage';
+import { Link } from "react-router-dom";
 
 export default function SignUpPage(){
    const navigate = useNavigate();
@@ -14,8 +17,7 @@ export default function SignUpPage(){
 
     return(
     <div className='container'>
-            <button onClick={() => navigate(-1)}>Back</button>
-
+        <BackBtn />
    
             <Form>
                  <Form.Text className="text-muted">
@@ -42,14 +44,16 @@ export default function SignUpPage(){
         
       </Form.Group>
           <button  onClick={handleSignUp} className=" container-lg btn mb-3 btn-primary " type="submit">
-        Submit
-      </button>
+            Submit      </button>
         
      
     </Form>
-         <button onClick={() => navigate("/login")}>
-        Already have an account? Login
-      </button>
+        <Link to="/login" className='btn btn-outline'>
+          Already have an account? Login
+
+        </Link>
+
+
         </div>
 
     );
