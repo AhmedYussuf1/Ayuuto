@@ -4,12 +4,14 @@ import Logo from "../ui_components/Logo"
 import "../css/App.css";
 import { useNavigate } from "react-router-dom";
 import { handleSignUp } from "../logicCode/Utility";
+
 export default function LandingPag() {
   const navigate = useNavigate();
 
     return(
 
         <div className="container-fluid">
+
       <Card  >
           <Logo logoSoruce={logo} className="img-fluid   " style={{
 
