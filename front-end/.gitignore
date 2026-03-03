@@ -11,7 +11,8 @@ dist
 dist-ssr
 *.local
 .env
-
+.sql
+        back-end/src/schema.sql
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
