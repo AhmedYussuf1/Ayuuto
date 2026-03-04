@@ -1,0 +1,72 @@
+colors : /* =========================
+   AYUUTO COLOR PALETTE
+   ========================= /
+
+/ Primary Navy – Trust & Stability
+   Use for:
+   
+App header / navbar
+Primary buttons
+Section titles & strong emphasis
+Dashboard frames and borders
+/
+--primary-navy: #1F2A44;
+
+/ Emerald Green – Wealth & Growth
+   Use for:
+   
+Money values and totals
+Savings progress
+Success states (paid, completed)
+Positive charts and indicators
+/
+--emerald-green: #1FA971;
+
+/ Teal – Collaboration & Balance
+   Use for:
+   
+Secondary buttons
+Icons and illustrations
+Informational states
+Secondary chart lines
+/
+--teal: #2FA6A6;
+
+/ Coral Accent – Community & Action
+   Use for:
+   
+Call-to-action buttons (Join, Pay, Confirm)
+Highlights and badges
+Alerts and reminders (non-critical)
+Illustration accents (characters, details)
+/
+--coral-accent: #F07A5F;
+
+/ Warm Beige – Friendly Background
+   Use for:
+   
+Main page background
+Dashboard sections
+Empty states
+Large layout areas
+/
+--warm-beige: #F5EFE6;
+
+/ Light Gray – Structure & Separation
+   Use for:
+   
+Card backgrounds
+Dividers and borders
+Table rows
+Subtle UI separation
+/
+--light-gray: #E6E8EC;
+
+/ Dark Text – Readability
+   Use for:
+   
+Body text
+Descriptions
+Labels and metadata
+*/
+--dark-text: #333333;
