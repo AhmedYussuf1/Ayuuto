@@ -13,7 +13,7 @@ dist-ssr
 .env
 .sql
   
-/back-end/src/schema.sql
+./back-end/src/schema.sql
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -29,4 +29,4 @@ node_modules/
 .vite/
 **/.vite/
 .env
- back-end/package-lock.json
+ ./back-end/package-lock.json
