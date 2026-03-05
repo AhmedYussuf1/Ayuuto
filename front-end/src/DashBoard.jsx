@@ -2,6 +2,7 @@ import Person2Icon from '@mui/icons-material/Person2';
 import { getAuth, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import useUser from './logicCode/useUser';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function DashBoard(){
     const { isLoading, user } = useUser();
@@ -17,17 +18,28 @@ export default function DashBoard(){
 
                         <Person2Icon /></span>
                     {user &&
-                        <p>signed as {user.emal}</p>
+                        <p>signed as {user.email}</p>
 
                     }
-                    <p className="fs-3 col-sm " onClick={() => { signOut(getAuth()); navigate("/") }}> Sign out</p>
+                    <button className="fs-3 col-sm " onClick={() => { signOut(getAuth()); navigate("/") }}> Sign out</button>
 
                 </div>
 
 
 
             </div>}
+            <div className='container-fluid  row bg-warning '>
+                <div className='card m-2 col-4  bg-primary'>
+                    testing
+                    {/* display group detail */} </div>
 
+
+
+                <div className='card  col-4 bg-success'> test2
+                    {/* display payou informaitn */}
+                </div>
+
+            </div>
         </div>
     );
     
