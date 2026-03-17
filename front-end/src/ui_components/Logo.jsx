@@ -1,11 +1,11 @@
 const Logo = ({logoSoruce})=>{
-    return (<div className="ing-fluid" >
+    return ( 
         <img className="img-fluid  " style={{
 
-            maxHeight: "1000px", width: "auto",
+            maxHeight: "89rem", width: "auto",
 
         }}
-            src={logoSoruce} alt="logo " /> </div>
+            src={logoSoruce} alt="logo " />  
 
 )
 }

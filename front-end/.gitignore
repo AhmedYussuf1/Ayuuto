@@ -12,7 +12,8 @@ dist-ssr
 *.local
 .env
 .sql
-        back-end/src/schema.sql
+  
+./back-end/src/schema.sql
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,3 +24,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+node_modules/
+**/node_modules/
+.vite/
+**/.vite/
+.env
+ ./back-end/package-lock.json
