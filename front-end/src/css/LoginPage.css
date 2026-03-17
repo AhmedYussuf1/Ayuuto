@@ -1,0 +1,41 @@
+ 
+body {
+    background-color: #f5efe6;
+
+}
+div.form-container  {
+    padding : 20px;
+    background-color: #ffd2c7;
+    border-radius: 30px;
+
+
+
+ }
+ .card {
+        border-radius: 30px;
+        width : 70%;
+         gap : .4rem;
+        margin: 0  auto;
+        box-shadow:  10px 24px 30px #f9c0ad;
+
+
+
+ }
+ .input {
+        background-color: #f5efe6;
+
+}
+ button.btn{
+    background-color :#1FA971;
+    color : rgb(183, 224, 240)
+}
+button.btn:hover {
+    border :  1px teal solid;
+    color :#1FA971;
+}
+p.col { 
+    font-size: 2rem;
+    font-family: sans-serif;
+    font-weight: bolder;
+    text-align: center;
+}
