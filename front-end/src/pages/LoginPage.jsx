@@ -61,12 +61,12 @@ export default function LoginPage(){
       <div className='col   col-sm-12 col-md-5 col-lg-5 mb-3 col-xs-10'>
          <Logo logoSoruce={logo} className="img-fluid   " />
       </div>
-       <div className='container-fluid  form-container  col col-sm col-md-5 col-xs-12'>
+       <div className='container-fluid   form-container  col col-sm col-md-5 col-xs-12'>
 
  
 
    
-        <Form className='card p-2 '>
+        <Form className='card p-2 shadow-xl p-3 mb-5  rounded   '>
           <div className="fs-1  col-auto    align-center text-center">
             Login to Ayuuto        </div>
           {error && <Form.Text className="text-muted">
