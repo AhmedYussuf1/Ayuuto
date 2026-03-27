@@ -15,9 +15,10 @@ div.form-container  {
         border-radius: 30px;
         width : 70%;
          gap : .4rem;
-        margin: 0  auto;
-        box-shadow:  10px 24px 30px #f9c0ad;
+        margin: 3rem  auto;
+        /* box-shadow:  10px 24px 30px #f9c0ad; */
 
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .3) !important; /* Example values for a larger shadow */
 
 
  }
