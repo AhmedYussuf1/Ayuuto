@@ -1,38 +1,68 @@
+# ========================
+# Node / JavaScript
+# ========================
+node_modules/
+**/node_modules/
+
+dist/
+dist-ssr/
+.vite/
+**/.vite/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
- node_modules
-back-end/firebase_cr.json
 
-dist
-dist-ssr
-*.local
+# ========================
+# Environment & Secrets
+# ========================
 .env
-.sql
-  
-./back-end/src/schema.sql
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+.env.*
+*.local
+
+# Firebase / credentials
+firebase_cr.json
+back-end/firebase_cr.json
+front-end/firebase_cr.json
+serviceAccountKey.json
+
+# Keys
+*.pem
+*.key
+
+# ========================
+# OS files
+# ========================
 .DS_Store
+**/.DS_Store
+
+# ========================
+# Editor / IDE
+# ========================
+.vscode/
+!.vscode/extensions.json
+.idea/
+
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-.env
-*.pem
-*.key
-serviceAccountKey.json
 *.sw?
-node_modules/
-**/node_modules/
-.vite/
-**/.vite/
-.env
- ./back-end/package-lock.json
+
+# ========================
+# Database / misc
+# ========================
+*.sql
+
+# ========================
+# Optional (decide with team)
+# ========================
+# Uncomment if your team does NOT track lock files
+# package-lock.json
+# back-end/package-lock.json
+# front-end/package-lock.json
