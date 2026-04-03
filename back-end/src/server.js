@@ -2,11 +2,12 @@
 import cors from "cors";
 import pool from "./dbConnection.js";
 import admin from "firebase-admin";
- 
- 
-  import fs from "fs";
+import fs from "fs";
+import verifyFirebaseToken from "./middleware/verifyFirebaseToken.js";
 
-const credential = JSON.parse(fs.readFileSync("./config/firebase_cr.json", "utf8"));
+const credential = JSON.parse(
+  fs.readFileSync("./config/firebase_cr.json", "utf8")
+);
 
 admin.initializeApp({
   credential: admin.credential.cert(credential),
@@ -23,16 +24,24 @@ app.get("/", (req, res) => {
 
 app.get("/member", async (req, res) => {
   try {
-    const result = await p.query(`
+    const result = await pool.query(`
       SELECT member_id, email, firebase_uid, created_at, full_name
       FROM public.member
       ORDER BY member_id
     `);
+
     res.json(result.rows);
   } catch (err) {
     console.error("DB error:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+app.get("/protected", verifyFirebaseToken, (req, res) => {
+  res.json({
+    message: "Access granted",
+    user: req.user,
+  });
 });
 
 app.post("/member", async (req, res) => {
@@ -45,7 +54,7 @@ app.post("/member", async (req, res) => {
   }
 
   try {
-    const result = await p.query(
+    const result = await pool.query(
       `
       INSERT INTO public.member (email, firebase_uid, full_name)
       VALUES ($1, $2, $3)
