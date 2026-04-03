@@ -1,12 +1,12 @@
  import express from "express";
 import cors from "cors";
-import p from "./dbConnection.js";
+import pool from "./dbConnection.js";
 import admin from "firebase-admin";
  
  
   import fs from "fs";
 
-const credential = JSON.parse(fs.readFileSync("../config/firebase_cr.json", "utf8"));
+const credential = JSON.parse(fs.readFileSync("./config/firebase_cr.json", "utf8"));
 
 admin.initializeApp({
   credential: admin.credential.cert(credential),
