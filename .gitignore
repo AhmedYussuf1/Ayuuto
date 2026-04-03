@@ -1,0 +1,16 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# OS files
+.DS_Store
+**/.DS_Store
+
+# Environment
+.env
+.env.*
+
+# Firebase credentials
+firebase_cr.json
+back-end/config/firebase_cr.json
+serviceAccountKey.json
