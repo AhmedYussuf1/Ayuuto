@@ -7,10 +7,13 @@ CREATE EXTENSION IF NOT EXISTS citext;
 -- -------------------------
 -- MEMBER
 -- -------------------------
+ 
 CREATE TABLE member (
-  member_id  BIGSERIAL PRIMARY KEY,
-  name       TEXT NOT NULL,
-  email      CITEXT NOT NULL UNIQUE
+  member_id     BIGSERIAL PRIMARY KEY,
+  full_name     TEXT NOT NULL,
+  email         CITEXT NOT NULL UNIQUE,
+  firebase_uid  TEXT NOT NULL UNIQUE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- -------------------------

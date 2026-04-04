@@ -1,6 +1,6 @@
   import pg from "pg";
 const { Pool, Client } = pg;
-  const p = new Pool({
+  const pool = new Pool({
     host: "localhost",
   port: 5432,
   user: "postgres",
@@ -10,8 +10,8 @@ const { Pool, Client } = pg;
 });
 
 
-p.on("error", (err) => {
+pool.on("error", (err) => {
   console.error("PG Pool error:", err);
 });
  
-export default p;
+export default pool;
