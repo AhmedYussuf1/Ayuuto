@@ -5,24 +5,44 @@ import admin from "firebase-admin";
 import fs from "fs";
 import verifyFirebaseToken from "./middleware/verifyFirebaseToken.js";
 
+// Read Firebase service account credentials from local JSON file
 const credential = JSON.parse(
   fs.readFileSync("./config/firebase_cr.json", "utf8")
 );
 
+// Initialize Firebase Admin SDK so the backend can verify Firebase tokens
 admin.initializeApp({
   credential: admin.credential.cert(credential),
 });
 
 const app = express();
 
+// Middleware to parse incoming JSON request bodies
 app.use(express.json());
+
+// Allow requests from your frontend apps
 app.use(cors({ origin: ["http://localhost:3000", "http://localhost:5173"] }));
 
+// Helper function to extract token from Authorization header
+const getTokenFromHeader = (req) => {
+  const authHeader = req.headers.authorization;
+
+  // Return null if header is missing or not in Bearer format
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+
+  return authHeader.split(" ")[1];
+};
+
+// Basic test route
 app.get("/", (req, res) => {
   res.send("API running");
 });
 
-app.get("/member", async (req, res) => {
+// Get all members from the database
+// Protected route: only authenticated users can access it
+app.get("/member", verifyFirebaseToken, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT member_id, email, firebase_uid, created_at, full_name
@@ -37,6 +57,23 @@ app.get("/member", async (req, res) => {
   }
 });
 
+// Test route to confirm token is being extracted correctly
+app.get("/token-test", (req, res) => {
+  const token = getTokenFromHeader(req);
+
+  if (!token) {
+    return res.status(401).json({
+      error: "Missing or invalid Authorization header",
+    });
+  }
+
+  res.json({
+    message: "Token extracted successfully",
+    token,
+  });
+});
+
+// Test protected route
 app.get("/protected", verifyFirebaseToken, (req, res) => {
   res.json({
     message: "Access granted",
@@ -44,12 +81,18 @@ app.get("/protected", verifyFirebaseToken, (req, res) => {
   });
 });
 
-app.post("/member", async (req, res) => {
-  const { email, firebase_uid, full_name } = req.body;
+// Create or update a member in the database
+// Protected route: only authenticated users can create/update themselves
+app.post("/member", verifyFirebaseToken, async (req, res) => {
+  const { email, full_name } = req.body;
 
-  if (!email || !firebase_uid || !full_name) {
+  // Get the real Firebase UID from the verified token
+  const firebase_uid = req.user.uid;
+
+  // Validate required fields
+  if (!email || !full_name) {
     return res.status(400).json({
-      error: "email, firebase_uid, and full_name are required",
+      error: "email and full_name are required",
     });
   }
 
@@ -74,6 +117,32 @@ app.post("/member", async (req, res) => {
   }
 });
 
+// Route to get the currently logged-in user's member record
+app.get("/me", verifyFirebaseToken, async (req, res) => {
+  try {
+    const firebase_uid = req.user.uid;
+
+    const result = await pool.query(
+      `
+      SELECT member_id, email, firebase_uid, created_at, full_name
+      FROM public.member
+      WHERE firebase_uid = $1
+      `,
+      [firebase_uid]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error fetching current user:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Start the Express server
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Listening on http://localhost:${PORT}`);

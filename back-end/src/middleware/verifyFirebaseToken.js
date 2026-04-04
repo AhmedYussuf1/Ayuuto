@@ -4,19 +4,28 @@ const verifyFirebaseToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
+    // Check if Authorization header exists and starts with "Bearer "
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing or invalid authorization token" });
+      return res.status(401).json({
+        error: "No token provided or invalid format",
+      });
     }
 
-    const idToken = authHeader.split("Bearer ")[1];
+    // Extract token only
+    const token = authHeader.split(" ")[1];
 
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Verify token with Firebase
+    const decodedToken = await admin.auth().verifyIdToken(token);
 
+    // Save decoded user info on the request object
     req.user = decodedToken;
+
     next();
-  } catch (error) {
-    console.error("Error verifying Firebase token:", error.message);
-    return res.status(401).json({ error: "Unauthorized" });
+  } catch (err) {
+    console.error("Token verification error:", err);
+    res.status(401).json({
+      error: "Unauthorized",
+    });
   }
 };
 
