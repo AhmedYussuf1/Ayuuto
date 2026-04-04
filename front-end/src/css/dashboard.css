@@ -1,0 +1,204 @@
+/* whole page background */
+.dashboard-page {
+  min-height: 100vh; /* makes page fill full screen height */
+  background: #F5EFE6; /* warm beige background */
+  color: #333333; /* normal text color */
+}
+
+/* NAVBAR (top bar) */
+.dashboard-nav {
+  background: #1F2A44; /* navy blue */
+  color: white;
+  padding: 16px 32px; /* space inside navbar */
+  display: flex; /* puts items in a row */
+  justify-content: space-between; /* pushes left/right apart */
+  align-items: center; /* centers vertically */
+}
+
+/* app name (AYUUTO) */
+.dashboard-logo {
+  font-size: 1.4rem;
+  font-weight: 700; /* bold */
+}
+
+/* navbar buttons container */
+.dashboard-nav-links {
+  display: flex;
+  gap: 12px; /* space between buttons */
+}
+
+/* navbar buttons */
+.dashboard-nav-links button {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* main content wrapper */
+.dashboard-container {
+  max-width: 1200px; /* keeps content centered and not too wide */
+  margin: auto; /* centers horizontally */
+  padding: 30px;
+}
+
+/* HERO (welcome + buttons section) */
+.dashboard-hero {
+  display: flex;
+  justify-content: space-between; /* text left, buttons right */
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+/* welcome title */
+.dashboard-hero h1 {
+  color: #1F2A44;
+}
+
+/* buttons container */
+.dashboard-hero-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* GREEN BUTTON (main action) */
+.primary-btn {
+  background: #1FA971; /* emerald green */
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* hover effect (slight fade) */
+.primary-btn:hover {
+  opacity: 0.9;
+}
+
+/* TEAL BUTTON (secondary action) */
+.secondary-btn {
+  background: #2FA6A6;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* hover effect */
+.secondary-btn:hover {
+  opacity: 0.9;
+}
+
+/* CORAL BUTTON (view group) */
+.view-btn {
+  background: #F07A5F;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* STATS SECTION (3 boxes) */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+/* each stat card */
+.stat-card {
+  background: #E6E8EC; /* light gray */
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* stat title */
+.stat-card h3 {
+  color: #1F2A44;
+}
+
+/* stat number */
+.stat-card p {
+  color: #1FA971; /* green = money */
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* MAIN GRID (left + right sections) */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* left bigger, right smaller */
+  gap: 20px;
+}
+
+/* section container */
+.dashboard-section {
+  background: #F5EFE6;
+  border: 1px solid #E6E8EC;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+/* section titles */
+.dashboard-section h2 {
+  color: #1F2A44;
+  font-weight: 700;
+}
+
+/* group card */
+.group-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 10px;
+  transition: 0.2s; /* smooth animation */
+}
+
+/* hover effect (moves up slightly) */
+.group-card:hover {
+  transform: translateY(-2px);
+}
+
+/* top of card (name + status) */
+.group-card-top {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* bottom of card (payout + button) */
+.group-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+/* status badge base */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  color: white;
+}
+
+/* active = green */
+.status-badge.active {
+  background: #1FA971;
+}
+
+/* pending = coral */
+.status-badge.pending {
+  background: #F07A5F;
+}
+
+/* activity card (right side) */
+.activity-card {
+  background: white;
+  padding: 12px;
+  margin-top: 10px;
+  border-left: 5px solid #2FA6A6; /* teal line on left */
+  border-radius: 10px;
+}
