@@ -1,8 +1,8 @@
 import Person2Icon from "@mui/icons-material/Person2";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import useUser from "./logicCode/useUser";
-import { auth } from "../config"; // adjust path if needed
+import useUser from "../logicCode/useUser";
+import { auth } from "../logicCode/config";
 import "../css/dashboard.css";
 
 export default function DashBoard() {
@@ -36,8 +36,6 @@ export default function DashBoard() {
 
   return (
     <div className="dashboard-page">
-
-      {/* NAVBAR */}
       <nav className="dashboard-nav">
         <div className="dashboard-logo">AYUUTO</div>
 
@@ -46,20 +44,12 @@ export default function DashBoard() {
             <Person2Icon /> {user?.email}
           </span>
 
-          <button onClick={() => navigate("/dashboard")}>
-            Dashboard
-          </button>
-
-          <button onClick={handleLogout}>
-            Logout
-          </button>
+          <button onClick={() => navigate("/dashboard")}>Dashboard</button>
+          <button onClick={handleLogout}>Logout</button>
         </div>
       </nav>
 
-      {/* MAIN */}
       <div className="dashboard-container">
-
-        {/* HERO */}
         <div className="dashboard-hero">
           <div>
             <h1>Welcome back</h1>
@@ -83,7 +73,6 @@ export default function DashBoard() {
           </div>
         </div>
 
-        {/* STATS */}
         <div className="dashboard-stats">
           <div className="stat-card">
             <h3>Total Groups</h3>
@@ -101,10 +90,7 @@ export default function DashBoard() {
           </div>
         </div>
 
-        {/* MAIN GRID */}
         <div className="dashboard-main-grid">
-
-          {/* GROUPS */}
           <section className="dashboard-section">
             <h2>Your Groups</h2>
 
@@ -143,7 +129,6 @@ export default function DashBoard() {
             </div>
           </section>
 
-          {/* ACTIVITY */}
           <section className="dashboard-section">
             <h2>Upcoming Activity</h2>
 
@@ -159,7 +144,6 @@ export default function DashBoard() {
               <p>Vacation Fund cycle starts again on April 15.</p>
             </div>
           </section>
-
         </div>
       </div>
     </div>
