@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import BackBtn from "../ui_components/BackBtn";
 import WarningIcon from "@mui/icons-material/Warning";
 import { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../logicCode/config";  
 
 export default function SignUpPage() {
   const navigate = useNavigate();
@@ -24,27 +25,28 @@ export default function SignUpPage() {
     }
 
     if (password !== confirmPassword) {
-      setError("Password and confirmPassword do not match");
+      setError("Password and confirm password do not match");
       return;
     }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
-        getAuth(),
+        auth,
         email,
         password
       );
 
       const firebaseUser = userCredential.user;
+      const token = await firebaseUser.getIdToken();
 
       const response = await fetch("http://localhost:3001/member", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           email: firebaseUser.email,
-          firebase_uid: firebaseUser.uid,
           full_name: fullName,
         }),
       });
