@@ -1,0 +1,83 @@
+.create-group-page {
+  min-height: 100vh;
+  background: #F5EFE6; /* beige */
+  color: #333333;
+}
+
+/* NAVBAR */
+.create-group-nav {
+  background: #1F2A44;
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.create-group-logo {
+  font-weight: bold;
+}
+
+.create-group-nav-links {
+  display: flex;
+  gap: 10px;
+}
+
+.create-group-nav-links button {
+  background: none;
+  border: none;
+  color: white;
+}
+
+/* MAIN */
+.create-group-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 40px;
+}
+
+/* HEADER */
+.create-group-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* FORM */
+.create-group-form {
+  background: #E6E8EC;
+  padding: 25px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.create-group-form input,
+.create-group-form select,
+.create-group-form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* BUTTONS */
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn {
+  background: #2FA6A6;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.submit-btn {
+  background: #1FA971;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+}
