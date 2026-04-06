@@ -7,7 +7,7 @@ import memberRoutes from "./routes/memberRoutes.js";
 
 const app = express();
 
-// Read Firebase service account credentials from local JSON file
+// Load Firebase credentials
 const credential = JSON.parse(
   fs.readFileSync("./config/firebase_cr.json", "utf8")
 );
@@ -19,7 +19,15 @@ admin.initializeApp({
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: ["http://localhost:3000", "http://localhost:5173"] }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:5174",
+    ],
+  })
+);
 
 // Member routes
 app.use("/member", memberRoutes);
@@ -35,12 +43,12 @@ const getTokenFromHeader = (req) => {
   return authHeader.split(" ")[1];
 };
 
-// Basic test route
+// Public test route
 app.get("/", (req, res) => {
   res.send("API running");
 });
 
-// Test route to confirm token is being extracted correctly
+// Token test route
 app.get("/token-test", (req, res) => {
   const token = getTokenFromHeader(req);
 
@@ -56,7 +64,7 @@ app.get("/token-test", (req, res) => {
   });
 });
 
-// Test protected route
+// Protected test route
 app.get("/protected", verifyFirebaseToken, (req, res) => {
   res.json({
     message: "Access granted",
@@ -67,5 +75,5 @@ app.get("/protected", verifyFirebaseToken, (req, res) => {
 // Start server
 const PORT = 3001;
 app.listen(PORT, () => {
-  console.log(`Listening on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
