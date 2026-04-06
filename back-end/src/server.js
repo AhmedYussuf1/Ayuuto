@@ -1,19 +1,23 @@
-import cors from "cors";
 import express from "express";
-import p from "./dbConnection.js";
+import cors from "cors";
 import admin from "firebase-admin";
 import fs from "fs";
+import verifyFirebaseToken from "./middleware/verifyFirebaseToken.js";
+import memberRoutes from "./routes/memberRoutes.js";
 
-//  Load Firebase credentials
-const credential = JSON.parse(fs.readFileSync("./src/firebase_cr.json"));
+const app = express();
 
+// Load Firebase credentials
+const credential = JSON.parse(
+  fs.readFileSync("./config/firebase_cr.json", "utf8")
+);
+
+// Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(credential),
 });
 
-const app = express();
-
-//  Middleware
+// Middleware
 app.use(express.json());
 app.use(
   cors({
@@ -25,53 +29,50 @@ app.use(
   })
 );
 
-//  Test route
+// Member routes
+app.use("/member", memberRoutes);
+
+// Helper function to extract token from Authorization header
+const getTokenFromHeader = (req) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+
+  return authHeader.split(" ")[1];
+};
+
+// Public test route
 app.get("/", (req, res) => {
   res.send("API running");
 });
 
-//  GET all members (test route)
-app.get("/member", async (req, res) => {
-  try {
-    const result = await p.query('SELECT * FROM public."member"');
-    res.json(result.rows);
-  } catch (err) {
-    console.error("DB error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+// Token test route
+app.get("/token-test", (req, res) => {
+  const token = getTokenFromHeader(req);
 
-//  CREATE member (FIXED)
-app.post("/member", async (req, res) => {
-  try {
-    const { email, firebase_uid, full_name } = req.body;
-
-    //  Validate input
-    if (!email || !firebase_uid || !full_name) {
-      return res.status(400).json({
-        error: "Missing required fields",
-      });
-    }
-
-    //  FIX: use "name" column instead of full_name
-    const result = await p.query(
-      `INSERT INTO public."member" (email, firebase_uid, name)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-      [email, firebase_uid, full_name]
-    );
-
-    res.status(201).json({
-      message: "Member created successfully",
-      member: result.rows[0],
+  if (!token) {
+    return res.status(401).json({
+      error: "Missing or invalid Authorization header",
     });
-  } catch (err) {
-    console.error("Create member error:", err);
-    res.status(500).json({ error: err.message });
   }
+
+  res.json({
+    message: "Token extracted successfully",
+    token,
+  });
 });
 
-//  Start server
+// Protected test route
+app.get("/protected", verifyFirebaseToken, (req, res) => {
+  res.json({
+    message: "Access granted",
+    user: req.user,
+  });
+});
+
+// Start server
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
