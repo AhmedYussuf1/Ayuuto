@@ -16,14 +16,7 @@ export default function LoginPage(){
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate("");
-
-
-  function handleSignUp(e) {
-    e.preventDefault();
-    // TODO: firebase signup
-    // on success:
-    // navigate("/login");
-  }
+ 
   async function login(e) {
     e.preventDefault();
 
