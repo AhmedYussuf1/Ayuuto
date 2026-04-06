@@ -1,11 +1,14 @@
-import express from "express";
+ import express from "express";
 import cors from "cors";
 import admin from "firebase-admin";
 import fs from "fs";
+
 import verifyFirebaseToken from "./middleware/verifyFirebaseToken.js";
 import memberRoutes from "./routes/memberRoutes.js";
+import groupRoutes from "./routes/groupRoutes.js";
 
 const app = express();
+const PORT = 3001;
 
 // Load Firebase credentials
 const credential = JSON.parse(
@@ -29,8 +32,9 @@ app.use(
   })
 );
 
-// Member routes
+// Routes
 app.use("/member", memberRoutes);
+app.use("/group", groupRoutes);
 
 // Helper function to extract token from Authorization header
 const getTokenFromHeader = (req) => {
@@ -43,7 +47,7 @@ const getTokenFromHeader = (req) => {
   return authHeader.split(" ")[1];
 };
 
-// Public test route
+// Public route
 app.get("/", (req, res) => {
   res.send("API running");
 });
@@ -73,7 +77,6 @@ app.get("/protected", verifyFirebaseToken, (req, res) => {
 });
 
 // Start server
-const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
