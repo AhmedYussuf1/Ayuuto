@@ -1,0 +1,112 @@
+.join-group-page {
+  min-height: 100vh;
+  background: #F5EFE6; /* warm beige */
+  color: #333333;
+}
+
+/* navbar */
+.join-group-nav {
+  background: #1F2A44; /* navy */
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.join-group-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.join-group-nav-links {
+  display: flex;
+  gap: 12px;
+}
+
+.join-group-nav-links button {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* page container */
+.join-group-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 50px 20px;
+}
+
+/* header */
+.join-group-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.join-group-header h1 {
+  color: #1F2A44; /* navy */
+  margin-bottom: 8px;
+}
+
+/* form card */
+.join-group-form {
+  background: #E6E8EC; /* light gray */
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.join-group-form label {
+  font-weight: 600;
+  color: #1F2A44;
+}
+
+.join-group-form input {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #d3d7dd;
+  background: white;
+  font-size: 1rem;
+}
+
+.join-group-note {
+  margin-top: 4px;
+  color: #333333;
+  font-size: 0.95rem;
+}
+
+/* buttons row */
+.join-group-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* back button */
+.back-btn {
+  background: #2FA6A6; /* teal */
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* join button */
+.join-btn {
+  background: #F07A5F; /* coral */
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.back-btn:hover,
+.join-btn:hover {
+  opacity: 0.9;
+}
