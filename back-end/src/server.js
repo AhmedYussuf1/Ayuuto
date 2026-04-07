@@ -8,6 +8,7 @@ import memberRoutes from "./routes/memberRoutes.js";
 import groupRoutes from "./routes/groupRoutes.js";
 import membershipRoutes from "./routes/membershipRoutes.js";
 import contributionRoutes from "./routes/contributionRoutes.js";
+import payoutRoutes from "./routes/payoutRoutes.js";
 
 const app = express();
 app.use(cors({
@@ -24,6 +25,7 @@ app.use("/member", memberRoutes);
 app.use("/group", groupRoutes);
 app.use("/membership", membershipRoutes);
 app.use("/contribution", contributionRoutes); //GET /contribution/group/1
+app.use("/payout", payoutRoutes); //GET /payout/group/1
 
 // Load Firebase credentials
 const credential = JSON.parse(
