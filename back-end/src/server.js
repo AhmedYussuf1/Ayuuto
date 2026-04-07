@@ -6,7 +6,7 @@ import fs from "fs";
 import verifyFirebaseToken from "./middleware/verifyFirebaseToken.js";
 import memberRoutes from "./routes/memberRoutes.js";
 import groupRoutes from "./routes/groupRoutes.js";
-
+import membershipRoutes from "./routes/membershipRoutes.js";
 const app = express();
 const PORT = 3001;
 
@@ -35,7 +35,7 @@ app.use(
 // Routes
 app.use("/member", memberRoutes);
 app.use("/group", groupRoutes);
-
+app.use("/membership", membershipRoutes);
 // Helper function to extract token from Authorization header
 const getTokenFromHeader = (req) => {
   const authHeader = req.headers.authorization;
