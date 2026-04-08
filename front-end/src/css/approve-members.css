@@ -1,0 +1,103 @@
+.approve-members-page {
+  min-height: 100vh;
+  background: #f5efe6;
+  color: #233333;
+}
+
+.approve-members-nav {
+  background: #1f2a44;
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.approve-members-logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.approve-members-nav-links {
+  display: flex;
+  gap: 12px;
+}
+
+.approve-members-nav-links button {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.approve-members-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px 50px;
+}
+
+.approve-members-header h1 {
+  font-size: 3rem;
+  color: #1f2a44;
+  margin-bottom: 8px;
+}
+
+.approve-members-header p {
+  margin-bottom: 28px;
+}
+
+.approve-members-section {
+  background: #dfe2e8;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.request-card {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.request-info h3 {
+  margin: 0 0 6px 0;
+  color: #1f2a44;
+}
+
+.request-info p,
+.request-info span {
+  margin: 0;
+  color: #555;
+}
+
+.request-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.approve-btn,
+.reject-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.approve-btn {
+  background: #2bb673;
+}
+
+.reject-btn {
+  background: #ef7b5d;
+}

@@ -105,6 +105,30 @@ export default function ViewGroupPage() {
               <button className="copy-btn" onClick={handleCopyCode}>
                 Copy Code
               </button>
+              
+              <button
+            className="copy-btn"
+            onClick={() => navigate(`/group/${id}/invite`)}
+              >
+            Manage Invites
+              </button>
+           
+            <button onClick={() => navigate(`/group/${id}/approve-members`)}>
+              Approve Members
+            </button>
+
+            <button onClick={() => navigate(`/group/${id}/contribute`)}>
+              Make Contribution
+            </button>
+
+            <button onClick={() => navigate(`/group/${id}/payouts`)}>
+              View Payouts
+            </button>
+
+            <button onClick={() => navigate(`/group/${id}/settings`)}>
+              Group Settings
+            </button>
+              
             </div>
           </div>
         </section>
