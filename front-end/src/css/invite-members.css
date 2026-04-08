@@ -1,0 +1,148 @@
+.invite-members-page {
+  min-height: 100vh;
+  background: #f5efe6;
+  color: #233333;
+}
+
+.invite-members-nav {
+  background: #1f2a44;
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.invite-members-logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.invite-members-nav-links {
+  display: flex;
+  gap: 12px;
+}
+
+.invite-members-nav-links button {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.invite-members-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px 50px;
+}
+
+.invite-members-header h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #1f2a44;
+  margin-bottom: 8px;
+}
+
+.invite-members-header p {
+  font-size: 1.1rem;
+  margin-bottom: 28px;
+}
+
+.invite-members-section {
+  background: #dfe2e8;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.invite-members-section h2 {
+  color: #1f2a44;
+  margin-bottom: 8px;
+}
+
+.invite-members-section p {
+  margin-bottom: 16px;
+}
+
+.invite-code-box {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.invite-code-value {
+  background: #f5efe6;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: #1f2a44;
+  min-width: 120px;
+  text-align: center;
+}
+
+.copy-btn,
+.send-invite-btn,
+.remove-invite-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.copy-btn,
+.remove-invite-btn {
+  background: #ef7b5d;
+}
+
+.send-invite-btn {
+  background: #2bb673;
+}
+
+.invite-form {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.invite-input {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+}
+
+.pending-invites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pending-invite-card {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pending-invite-card h3 {
+  margin: 0 0 6px 0;
+  color: #1f2a44;
+}
+
+.pending-invite-card p {
+  margin: 0;
+  color: #555;
+}

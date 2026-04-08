@@ -10,7 +10,7 @@ const p = new Pool({
   port: 5432,
   user: "postgres",
   password: process.env.DB_PASSWORD,
-  database: "ayuuto_db",
+  database: "ayuuto",
 });
 
 p.on("error", (err) => {

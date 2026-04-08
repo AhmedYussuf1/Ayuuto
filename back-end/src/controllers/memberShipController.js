@@ -127,3 +127,4 @@ export const updateMembership = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+

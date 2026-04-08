@@ -6,6 +6,11 @@ import DashBoard from "./pages/DashBoard";
 import CreateGroupPage from "./pages/CreateGroupPage";
 import JoinGroupPage from "./pages/JoinGroupPage";
 import ViewGroupPage from "./pages/ViewGroupPage";
+import InviteMembersPage from "./pages/InviteMembersPage";
+import ApproveMembersPage from "./pages/ApproveMembersPage";
+import MakeContributionPage from "./pages/MakeContributionPage";
+import PayoutPage from "./pages/PayoutPage";
+import GroupSettingsPage from "./pages/GroupSettingsPage";
 
 // this lets me create routes
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -19,6 +24,11 @@ const router = createBrowserRouter([
   { path: "/create-group", element: <CreateGroupPage /> },
   { path: "/join-group", element: <JoinGroupPage /> },
   { path: "/group/:id", element: <ViewGroupPage /> },
+  { path: "/group/:id/invite", element: <InviteMembersPage /> },
+  { path: "/group/:id/approve-members", element: <ApproveMembersPage /> },
+  { path: "/group/:id/contribute", element: <MakeContributionPage /> },
+  { path: "/group/:id/payouts", element: <PayoutPage /> },
+  { path: "/group/:id/settings", element: <GroupSettingsPage /> },
 ]);
 
 // loads app

@@ -1,0 +1,136 @@
+.contribution-page {
+  min-height: 100vh;
+  background: #f5efe6;
+  color: #233333;
+}
+
+.contribution-nav {
+  background: #1f2a44;
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contribution-logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.contribution-nav-links {
+  display: flex;
+  gap: 12px;
+}
+
+.contribution-nav-links button {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.contribution-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px 50px;
+}
+
+.contribution-header h1 {
+  font-size: 3rem;
+  color: #1f2a44;
+  margin-bottom: 8px;
+}
+
+.contribution-header p {
+  margin-bottom: 28px;
+}
+
+.contribution-section {
+  background: #dfe2e8;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.contribution-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  flex: 1;
+}
+
+.summary-card h3 {
+  margin: 0 0 8px 0;
+  color: #1f2a44;
+}
+
+.summary-card p {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.payment-box {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.contribution-input {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+}
+
+.pay-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: white;
+  background: #2bb673;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.history-card {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-card h3 {
+  margin: 0 0 6px 0;
+  color: #1f2a44;
+}
+
+.history-card p {
+  margin: 0;
+}
+
+.paid-status {
+  background: #2bb673;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
