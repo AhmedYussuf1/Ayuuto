@@ -1,4 +1,4 @@
- import express from "express";
+  import express from "express";
 import cors from "cors";
 import admin from "firebase-admin";
 import fs from "fs";
@@ -6,11 +6,10 @@ import fs from "fs";
 import verifyFirebaseToken from "./middleware/verifyFirebaseToken.js";
 import memberRoutes from "./routes/memberRoutes.js";
 import groupRoutes from "./routes/groupRoutes.js";
-import membershipRoutes from "./routes/membershipRoutes.js";
-import contributionRoutes from "./routes/contributionRoutes.js";
+ import contributionRoutes from "./routes/contributionRoutes.js";
 import payoutRoutes from "./routes/payoutRoutes.js";
 import invitationRoutes from  "./routes/invitationRoutes.js";
- 
+ import membershipRoutes from "./routes/membershipRoutes.js";
 
 const app = express();
 app.use(cors({
@@ -39,13 +38,6 @@ const credential = JSON.parse(
 admin.initializeApp({
   credential: admin.credential.cert(credential),
 });
-
-
- 
- 
-
-
-
 
 // Helper function to extract token from Authorization header
 const getTokenFromHeader = (req) => {
