@@ -1,11 +1,11 @@
  import express from "express";
 import verifyFirebaseToken from "../middleware/verifyFirebaseToken.js";
-import {
+ import {
   createMembership,
   getMembershipsByGroupId,
   getMembershipsByMemberId,
   updateMembership,
-} from  "../controllers/memberShipController.js";
+}  from "../controllers/membershipController.js";
 
 const router = express.Router();
 
