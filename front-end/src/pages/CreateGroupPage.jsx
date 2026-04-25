@@ -1,17 +1,10 @@
-// this lets me move between pages
 import { useNavigate } from "react-router-dom";
-
-// this lets me store form values
 import { useState } from "react";
-
-// IMPORTANT → go up one folder then into css
 import "../css/create-group.css";
 
-// this is the create group page
 export default function CreateGroupPage() {
   const navigate = useNavigate();
 
-  // this stores form data
   const [formData, setFormData] = useState({
     groupName: "",
     contributionAmount: "",
@@ -20,7 +13,8 @@ export default function CreateGroupPage() {
     notes: "",
   });
 
-  // runs when user types
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -30,21 +24,59 @@ export default function CreateGroupPage() {
     });
   };
 
-  // runs when form is submitted
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("FORM DATA:", formData);
+    if (!formData.groupName.trim()) {
+      alert("Please enter a group name");
+      return;
+    }
 
-    alert("Group created");
+    if (!formData.startDate) {
+      alert("Please select a start date");
+      return;
+    }
 
-    navigate("/dashboard");
+    try {
+      setLoading(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("http://localhost:3001/group", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          group_name: formData.groupName,
+          start_cycle_date: formData.startDate,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create group");
+      }
+
+      alert("Group created successfully");
+
+      if (data.group_id) {
+        navigate(`/group/${data.group_id}`);
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Create group error:", error);
+      alert(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="create-group-page">
-
-      {/* NAVBAR */}
       <nav className="create-group-nav">
         <div className="create-group-logo">AYUUTO</div>
 
@@ -54,18 +86,13 @@ export default function CreateGroupPage() {
         </div>
       </nav>
 
-      {/* MAIN CONTENT */}
       <div className="create-group-container">
-
-        {/* HEADER */}
         <div className="create-group-header">
           <h1>Create a New Group</h1>
           <p>Set up a savings group</p>
         </div>
 
-        {/* FORM */}
         <form className="create-group-form" onSubmit={handleSubmit}>
-
           <label>Group Name</label>
           <input
             type="text"
@@ -113,15 +140,15 @@ export default function CreateGroupPage() {
               type="button"
               className="cancel-btn"
               onClick={() => navigate("/dashboard")}
+              disabled={loading}
             >
               Cancel
             </button>
 
-            <button type="submit" className="submit-btn">
-              Create Group
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? "Creating..." : "Create Group"}
             </button>
           </div>
-
         </form>
       </div>
     </div>

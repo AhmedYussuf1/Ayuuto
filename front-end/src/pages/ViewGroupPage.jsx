@@ -1,52 +1,79 @@
-// this lets me move between pages
 import { useNavigate, useParams } from "react-router-dom";
-
-// this is the css for this page
+import { useEffect, useState } from "react";
 import "../css/view-group.css";
 
-// this is the view group page
 export default function ViewGroupPage() {
   const navigate = useNavigate();
-
-  // this gets the group id from the url like /group/1
   const { id } = useParams();
 
-  // fake group data for now
-  // later this will come from backend using the id
-  const group = {
-    id,
-    name: "Friends Savings",
-    contributionAmount: "$100 / month",
-    cycle: "Monthly",
-    status: "Active",
-    nextPayout: "Bryan",
-    totalSaved: "$2,000",
-    inviteCode: "AYU123",
-    members: [
-      { name: "Ahmed", paymentStatus: "Paid", payoutPosition: "#1" },
-      { name: "Bryan", paymentStatus: "Paid", payoutPosition: "#2" },
-      { name: "Mai", paymentStatus: "Pending", payoutPosition: "#3" },
-    ],
-    activity: [
-      "Bryan paid contribution on March 20",
-      "Ahmed payout confirmed on March 22",
-      "Next group due date is March 29",
-    ],
-  };
+  const [group, setGroup] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // this copies the invite code
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const groupRes = await fetch(`http://localhost:3001/group/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const groupData = await groupRes.json();
+
+        if (!groupRes.ok) {
+          throw new Error(groupData.error || "Failed to load group");
+        }
+
+        const membershipRes = await fetch(
+          `http://localhost:3001/membership/group/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const membershipData = await membershipRes.json();
+
+        if (!membershipRes.ok) {
+          throw new Error(membershipData.error || "Failed to load members");
+        }
+
+        setGroup(groupData);
+        setMembers(membershipData);
+      } catch (error) {
+        console.error("View group error:", error);
+        alert(error.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroupData();
+  }, [id]);
+
   const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(group.inviteCode);
-      alert("Invite code copied");
+      await navigator.clipboard.writeText(`GROUP-${id}`);
+      alert("Group code copied");
     } catch (error) {
       alert("Could not copy code");
     }
   };
 
+  if (loading) {
+    return <div className="view-group-page">Loading group...</div>;
+  }
+
+  if (!group) {
+    return <div className="view-group-page">Group not found.</div>;
+  }
+
   return (
     <div className="view-group-page">
-      {/* NAVBAR */}
       <nav className="view-group-nav">
         <div className="view-group-logo">AYUUTO</div>
 
@@ -56,14 +83,12 @@ export default function ViewGroupPage() {
         </div>
       </nav>
 
-      {/* MAIN CONTENT */}
       <div className="view-group-container">
-        {/* top section */}
         <div className="view-group-header">
           <div>
-            <h1>{group.name}</h1>
+            <h1>{group.group_name}</h1>
             <p>
-              Contribution: {group.contributionAmount} | Cycle: {group.cycle} | Status: {group.status}
+              Start Date: {group.start_cycle_date} | Status: Active
             </p>
           </div>
 
@@ -72,25 +97,23 @@ export default function ViewGroupPage() {
           </button>
         </div>
 
-        {/* stat cards */}
         <div className="view-group-stats">
           <div className="group-stat-card">
             <h3>Members</h3>
-            <p>{group.members.length}</p>
+            <p>{members.length}</p>
           </div>
 
           <div className="group-stat-card">
             <h3>Next Payout</h3>
-            <p>{group.nextPayout}</p>
+            <p>{members.length > 0 ? members[0].full_name : "N/A"}</p>
           </div>
 
           <div className="group-stat-card">
             <h3>Total Saved</h3>
-            <p>{group.totalSaved}</p>
+            <p>--</p>
           </div>
         </div>
 
-        {/* invite section */}
         <section className="invite-section">
           <div className="invite-section-text">
             <h2>Invite Members</h2>
@@ -100,70 +123,82 @@ export default function ViewGroupPage() {
           <div className="invite-code-box">
             <span className="invite-code-label">Group Code</span>
             <div className="invite-code-row">
-              <div className="invite-code-value">{group.inviteCode}</div>
+              <div className="invite-code-value">{`GROUP-${id}`}</div>
 
               <button className="copy-btn" onClick={handleCopyCode}>
                 Copy Code
               </button>
-              
+
               <button
-            className="copy-btn"
-            onClick={() => navigate(`/group/${id}/invite`)}
+                className="copy-btn"
+                onClick={() => navigate(`/group/${id}/invite`)}
               >
-            Manage Invites
+                Manage Invites
               </button>
-           
-            <button onClick={() => navigate(`/group/${id}/approve-members`)}>
-              Approve Members
-            </button>
 
-            <button onClick={() => navigate(`/group/${id}/contribute`)}>
-              Make Contribution
-            </button>
+              <button
+                className="copy-btn"
+                onClick={() => navigate(`/group/${id}/approve-members`)}
+              >
+                Approve Members
+              </button>
 
-            <button onClick={() => navigate(`/group/${id}/payouts`)}>
-              View Payouts
-            </button>
+              <button
+                className="copy-btn"
+                onClick={() => navigate(`/group/${id}/contribute`)}
+              >
+                Make Contribution
+              </button>
 
-            <button onClick={() => navigate(`/group/${id}/settings`)}>
-              Group Settings
-            </button>
-              
+              <button
+                className="copy-btn"
+                onClick={() => navigate(`/group/${id}/payouts`)}
+              >
+                View Payouts
+              </button>
+
+              <button
+                className="copy-btn"
+                onClick={() => navigate(`/group/${id}/settings`)}
+              >
+                Group Settings
+              </button>
             </div>
           </div>
         </section>
 
-        {/* main grid */}
         <div className="view-group-grid">
-          {/* members section */}
           <section className="view-group-section">
             <h2>Members</h2>
 
             <div className="members-list">
-              {group.members.map((member, index) => (
-                <div className="member-card" key={index}>
+              {members.map((member) => (
+                <div className="member-card" key={member.membership_id}>
                   <div>
-                    <h3>{member.name}</h3>
-                    <p>{member.paymentStatus}</p>
+                    <h3>{member.full_name}</h3>
+                    <p>{member.role}</p>
                   </div>
 
                   <span className="payout-badge">
-                    Payout Position {member.payoutPosition}
+                    Payout Position {member.payout_position ?? "N/A"}
                   </span>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* recent activity section */}
           <section className="view-group-section">
             <h2>Recent Activity</h2>
 
-            {group.activity.map((item, index) => (
-              <div className="group-activity-card" key={index}>
-                <p>{item}</p>
-              </div>
-            ))}
+            <div className="group-activity-card">
+              <p>Group loaded successfully.</p>
+            </div>
+            <div className="group-activity-card">
+              <p>{members.length} member(s) currently in this group.</p>
+            </div>
+            <div className="group-activity-card">
+              <p>Start cycle date: {group.start_cycle_date}</p>
+            </div>
           </section>
         </div>
       </div>

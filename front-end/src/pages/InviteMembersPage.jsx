@@ -1,20 +1,116 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import "../css/invite-members.css";
 
 export default function InviteMembersPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // fake group data for now
-  const group = {
-    id,
-    name: "Friends Savings",
-    inviteCode: "AYU123",
-    pendingInvites: [
-      { email: "ahmed@gmail.com", status: "Pending" },
-      { email: "mai@gmail.com", status: "Pending" },
-    ],
+  const [group, setGroup] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitations, setInvitations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchInviteData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const groupRes = await fetch(`http://localhost:3001/group/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const groupData = await groupRes.json();
+
+        if (!groupRes.ok) {
+          throw new Error(groupData.error || "Failed to load group");
+        }
+
+        const inviteRes = await fetch(
+          `http://localhost:3001/invitation/group/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const inviteData = await inviteRes.json();
+
+        if (!inviteRes.ok) {
+          throw new Error(inviteData.error || "Failed to load invitations");
+        }
+
+        setGroup(groupData);
+        setInvitations(inviteData);
+      } catch (error) {
+        console.error("Invite page error:", error);
+        alert(error.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInviteData();
+  }, [id]);
+
+  const handleSendInvite = async (e) => {
+    e.preventDefault();
+
+    if (!inviteEmail.trim()) {
+      alert("Please enter an email address");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("http://localhost:3001/invitation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          group_id: Number(id),
+          email: inviteEmail.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create invitation");
+      }
+
+      setInvitations((prev) => [data, ...prev]);
+      setInviteEmail("");
+      alert("Invitation sent successfully");
+    } catch (error) {
+      console.error("Create invitation error:", error);
+      alert(error.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const formatDate = (value) => {
+    if (!value) return "N/A";
+    return new Date(value).toLocaleDateString();
+  };
+
+  if (loading) {
+    return <div className="invite-members-page">Loading invites...</div>;
+  }
+
+  if (!group) {
+    return <div className="invite-members-page">Group not found.</div>;
+  }
 
   return (
     <div className="invite-members-page">
@@ -23,78 +119,76 @@ export default function InviteMembersPage() {
 
         <div className="invite-members-nav-links">
           <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate(`/group/${id}`)}>Back to Group</button>
+          <button onClick={() => navigate(`/group/${id}`)}>
+            Back to Group
+          </button>
         </div>
       </nav>
 
       <div className="invite-members-container">
         <div className="invite-members-header">
-          <div>
-            <h1>Invite Members</h1>
-            <p>Add people to {group.name} using email or the group code.</p>
-          </div>
+          <h1>Manage Invites</h1>
+          <p>Send and track invitations for {group.group_name}.</p>
         </div>
 
         <section className="invite-members-section">
-          <h2>Share Group Code</h2>
-          <p>Send this code to people so they can join your group.</p>
+          <h2>Send New Invitation</h2>
 
-          <div className="invite-code-box">
-            <div className="invite-code-value">{group.inviteCode}</div>
-            <button
-              className="copy-btn"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(group.inviteCode);
-                  alert("Invite code copied!");
-                } catch (error) {
-                  alert("Could not copy code");
-                }
-              }}
-            >
-              Copy Code
-            </button>
-          </div>
-        </section>
-
-        <section className="invite-members-section">
-          <h2>Invite by Email</h2>
-          <p>Type an email address and send an invitation.</p>
-
-          <div className="invite-form">
+          <form className="invite-members-form" onSubmit={handleSendInvite}>
+            <label>Email Address</label>
             <input
               type="email"
               placeholder="Enter member email"
-              className="invite-input"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
             />
-            <button
-              className="send-invite-btn"
-              onClick={() => alert("Invite feature will connect to backend later")}
-            >
-              Send Invite
-            </button>
-          </div>
+
+            <div className="invite-members-buttons">
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={() => navigate(`/group/${id}`)}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="send-btn"
+                disabled={submitting}
+              >
+                {submitting ? "Sending..." : "Send Invite"}
+              </button>
+            </div>
+          </form>
         </section>
 
         <section className="invite-members-section">
-          <h2>Pending Invites</h2>
+          <h2>Current Invitations</h2>
 
-          <div className="pending-invites-list">
-            {group.pendingInvites.map((invite, index) => (
-              <div className="pending-invite-card" key={index}>
-                <div>
-                  <h3>{invite.email}</h3>
-                  <p>{invite.status}</p>
+          <div className="invite-list">
+            {invitations.length > 0 ? (
+              invitations.map((invite) => (
+                <div className="invite-card" key={invite.invitation_id}>
+                  <div>
+                    <h3>{invite.email}</h3>
+                    <p>Status: {invite.status}</p>
+                  </div>
+
+                  <div className="invite-meta">
+                    <span>Sent: {formatDate(invite.invited_at)}</span>
+                  </div>
                 </div>
-
-                <button
-                  className="remove-invite-btn"
-                  onClick={() => alert("Remove invite feature will connect later")}
-                >
-                  Remove
-                </button>
+              ))
+            ) : (
+              <div className="invite-card">
+                <div>
+                  <h3>No invitations yet</h3>
+                  <p>Send your first invitation above.</p>
+                </div>
               </div>
-            ))}
+            )}
           </div>
         </section>
       </div>
