@@ -1,0 +1,194 @@
+.invite-members-page {
+  min-height: 100vh;
+  background-color: #f5efe6;
+  color: #1f2a44;
+}
+
+.invite-members-nav {
+  height: 72px;
+  background-color: #1f2a44;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 42px;
+}
+
+.invite-members-logo {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.invite-members-nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.invite-members-nav-links button {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.invite-members-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 52px 24px;
+}
+
+.invite-members-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.invite-members-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.invite-members-header p {
+  margin-top: 8px;
+  font-size: 1.05rem;
+  color: #333;
+}
+
+.invite-members-section {
+  background-color: #e7eaef;
+  border-radius: 14px;
+  padding: 26px;
+  margin-bottom: 26px;
+}
+
+.invite-members-section h2 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.invite-members-section p {
+  color: #333;
+  margin-bottom: 18px;
+}
+
+.invite-code-box {
+  background-color: white;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.invite-code-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.invite-code-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #1f2a44;
+}
+
+.invite-code-value {
+  background-color: #f5efe6;
+  border: 1px solid #ddd;
+  min-width: 130px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 800;
+  color: #1f2a44;
+}
+
+.invite-form {
+  background-color: white;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.invite-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.copy-btn,
+.send-invite-btn,
+.remove-invite-btn,
+.back-group-btn {
+  background-color: #f07a5f;
+  color: white;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-btn:hover,
+.send-invite-btn:hover,
+.remove-invite-btn:hover,
+.back-group-btn:hover {
+  opacity: 0.9;
+}
+
+.pending-invites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pending-invite-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 6px solid #2fa6a6;
+}
+
+.pending-invite-card h3 {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  color: #1f2a44;
+}
+
+.pending-invite-card p {
+  margin: 0;
+}
+
+.invite-error {
+  background: white;
+  border-left: 6px solid #f07a5f;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 800px) {
+  .invite-members-header,
+  .invite-form,
+  .pending-invite-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .invite-members-nav {
+    padding: 0 18px;
+  }
+}

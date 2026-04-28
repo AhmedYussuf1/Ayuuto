@@ -1,0 +1,104 @@
+.payout-page {
+  min-height: 100vh;
+  background-color: #f5efe6;
+  color: #1f2a44;
+}
+
+.payout-nav {
+  height: 72px;
+  background-color: #1f2a44;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 42px;
+}
+
+.payout-logo {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.payout-nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.payout-nav-links button {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payout-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 52px 24px;
+}
+
+.payout-header {
+  margin-bottom: 28px;
+}
+
+.payout-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.payout-section {
+  background-color: #e7eaef;
+  border-radius: 14px;
+  padding: 26px;
+  margin-bottom: 26px;
+}
+
+.payout-section h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+.next-payout-card {
+  background: white;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.next-payout-card input,
+.next-payout-card select {
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.mark-paid-btn {
+  background-color: #f07a5f;
+  color: white;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payout-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.payout-history-card {
+  background: white;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 6px solid #2fa6a6;
+}

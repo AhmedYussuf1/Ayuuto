@@ -4,14 +4,16 @@ import { useNavigate } from "react-router-dom";
 // this lets me store form values
 import { useState } from "react";
 
-// IMPORTANT → go up one folder then into css
+// firebase config so i can get the logged in user's token
+import { auth } from "../logicCode/config";
+
+// css for this page
 import "../css/create-group.css";
 
-// this is the create group page
 export default function CreateGroupPage() {
   const navigate = useNavigate();
 
-  // this stores form data
+  // this stores what the user types in the form
   const [formData, setFormData] = useState({
     groupName: "",
     contributionAmount: "",
@@ -20,7 +22,13 @@ export default function CreateGroupPage() {
     notes: "",
   });
 
-  // runs when user types
+  // this stores backend or validation errors
+  const [error, setError] = useState("");
+
+  // this changes the button text while the backend is working
+  const [loading, setLoading] = useState(false);
+
+  // this runs every time the user types in an input
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -30,20 +38,88 @@ export default function CreateGroupPage() {
     });
   };
 
-  // runs when form is submitted
-  const handleSubmit = (e) => {
+  // this gets the Firebase token for the logged in user
+  // the backend needs this token so it knows the request is coming from a real logged in user
+  async function getToken() {
+    const firebaseUser = auth.currentUser;
+
+    if (!firebaseUser) {
+      throw new Error("You must be logged in to create a group.");
+    }
+
+    return firebaseUser.getIdToken();
+  }
+
+  // this runs when the user submits the form
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("FORM DATA:", formData);
+    setError("");
+    setLoading(true);
 
-    alert("Group created");
+    try {
+      if (!formData.groupName.trim()) {
+        throw new Error("Group name is required.");
+      }
 
-    navigate("/dashboard");
+      if (!formData.contributionAmount) {
+        throw new Error("Contribution amount is required.");
+      }
+
+      if (!formData.startDate) {
+        throw new Error("Start date is required.");
+      }
+
+      if (!formData.frequency) {
+        throw new Error("Frequency is required.");
+      }
+
+      const token = await getToken();
+
+      // backend route: POST /group
+      // this sends the form data to the backend so the group is saved in the database
+      const response = await fetch("http://localhost:3001/group", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+
+          // this is required because the route is protected by Firebase token middleware
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          group_name: formData.groupName,
+          contribution_amount: Number(formData.contributionAmount),
+          start_cycle_date: formData.startDate,
+          frequency: formData.frequency,
+          notes: formData.notes,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not create group.");
+      }
+
+      // after the backend creates the group, go to the new group page
+      // if the backend response has the group id, use it
+      if (data.group?.group_id) {
+        navigate(`/group/${data.group.group_id}`);
+      } else if (data.group_id) {
+        navigate(`/group/${data.group_id}`);
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Create group error:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="create-group-page">
-
       {/* NAVBAR */}
       <nav className="create-group-nav">
         <div className="create-group-logo">AYUUTO</div>
@@ -56,16 +132,17 @@ export default function CreateGroupPage() {
 
       {/* MAIN CONTENT */}
       <div className="create-group-container">
-
         {/* HEADER */}
         <div className="create-group-header">
           <h1>Create a New Group</h1>
           <p>Set up a savings group</p>
         </div>
 
+        {/* ERROR MESSAGE */}
+        {error && <p className="alert alert-warning">{error}</p>}
+
         {/* FORM */}
         <form className="create-group-form" onSubmit={handleSubmit}>
-
           <label>Group Name</label>
           <input
             type="text"
@@ -117,11 +194,10 @@ export default function CreateGroupPage() {
               Cancel
             </button>
 
-            <button type="submit" className="submit-btn">
-              Create Group
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? "Creating..." : "Create Group"}
             </button>
           </div>
-
         </form>
       </div>
     </div>

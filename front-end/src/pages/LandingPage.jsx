@@ -1,7 +1,7 @@
 import Card from "../ui_components/Card";
 import logo from "../assets/ Warm_browns_logo.png";
 import Logo from "../ui_components/Logo"
-import "../css/App.css";
+import "../css/landing-page.css";
 import { useNavigate } from "react-router-dom";
  
 export default function LandingPag() {

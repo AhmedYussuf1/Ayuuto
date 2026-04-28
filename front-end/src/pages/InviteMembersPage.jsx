@@ -1,102 +1,79 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
 import "../css/invite-members.css";
 
 export default function InviteMembersPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // fake group data for now
-  const group = {
-    id,
-    name: "Friends Savings",
-    inviteCode: "AYU123",
-    pendingInvites: [
-      { email: "ahmed@gmail.com", status: "Pending" },
-      { email: "mai@gmail.com", status: "Pending" },
-    ],
+  const [email, setEmail] = useState("");
+
+  const copyGroupId = async () => {
+    await navigator.clipboard.writeText(id);
+    alert("Group ID copied");
   };
 
   return (
     <div className="invite-members-page">
+      {/* NAV */}
       <nav className="invite-members-nav">
         <div className="invite-members-logo">AYUUTO</div>
 
         <div className="invite-members-nav-links">
           <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate(`/group/${id}`)}>Back to Group</button>
+          <button onClick={() => navigate(`/group/${id}`)}>
+            Back to Group
+          </button>
         </div>
       </nav>
 
+      {/* MAIN */}
       <div className="invite-members-container">
-        <div className="invite-members-header">
-          <div>
-            <h1>Invite Members</h1>
-            <p>Add people to {group.name} using email or the group code.</p>
+        <div className="invite-header">
+          <h1>Invite Members</h1>
+          <p>Share your group or invite by email.</p>
+        </div>
+
+        {/* SHARE GROUP */}
+        <div className="invite-card">
+          <h2>Share Group ID</h2>
+          <p>Users can join using this ID on the Join Group page.</p>
+
+          <div className="invite-row">
+            <div className="invite-id-box">#{id}</div>
+
+            <button className="primary-btn" onClick={copyGroupId}>
+              Copy ID
+            </button>
           </div>
         </div>
 
-        <section className="invite-members-section">
-          <h2>Share Group Code</h2>
-          <p>Send this code to people so they can join your group.</p>
-
-          <div className="invite-code-box">
-            <div className="invite-code-value">{group.inviteCode}</div>
-            <button
-              className="copy-btn"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(group.inviteCode);
-                  alert("Invite code copied!");
-                } catch (error) {
-                  alert("Could not copy code");
-                }
-              }}
-            >
-              Copy Code
-            </button>
-          </div>
-        </section>
-
-        <section className="invite-members-section">
+        {/* EMAIL */}
+        <div className="invite-card">
           <h2>Invite by Email</h2>
-          <p>Type an email address and send an invitation.</p>
 
-          <div className="invite-form">
+          <div className="invite-row">
             <input
               type="email"
               placeholder="Enter member email"
               className="invite-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            <button
-              className="send-invite-btn"
-              onClick={() => alert("Invite feature will connect to backend later")}
-            >
-              Send Invite
-            </button>
+
+            <button className="primary-btn">Send Invite</button>
           </div>
-        </section>
+        </div>
 
-        <section className="invite-members-section">
-          <h2>Pending Invites</h2>
+        {/* INVITES LIST */}
+        <div className="invite-card">
+          <h2>Invitations</h2>
 
-          <div className="pending-invites-list">
-            {group.pendingInvites.map((invite, index) => (
-              <div className="pending-invite-card" key={index}>
-                <div>
-                  <h3>{invite.email}</h3>
-                  <p>{invite.status}</p>
-                </div>
-
-                <button
-                  className="remove-invite-btn"
-                  onClick={() => alert("Remove invite feature will connect later")}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+          <div className="empty-state">
+            <p>No invitations yet</p>
+            <span>Invitations will appear here.</span>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

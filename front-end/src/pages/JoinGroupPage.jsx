@@ -1,42 +1,101 @@
 // this lets me move between pages
 import { useNavigate } from "react-router-dom";
 
-// this lets me store what user types
+// this lets me store what the user types
 import { useState } from "react";
 
-// this is the css for this page
+// firebase config so i can get the logged in user
+import { auth } from "../logicCode/config";
+
+// css for this page
 import "../css/join-group.css";
 
-// this is the join group page
 export default function JoinGroupPage() {
   const navigate = useNavigate();
 
-  // this stores the invite code user types
-  const [inviteCode, setInviteCode] = useState("");
+  // this stores the group id the user types
+  const [groupId, setGroupId] = useState("");
 
-  // this runs when user clicks join group
-  const handleJoinGroup = (e) => {
-    e.preventDefault();
+  // this stores error messages
+  const [error, setError] = useState("");
 
-    // if input is empty dont continue
-    if (!inviteCode.trim()) {
-      alert("Please enter an invitation code");
-      return;
+  // this stops the user from clicking join many times
+  const [loading, setLoading] = useState(false);
+
+  // this gets the Firebase token
+  // the backend needs this token for protected routes
+  async function getToken() {
+    const firebaseUser = auth.currentUser;
+
+    if (!firebaseUser) {
+      throw new Error("You must be logged in");
     }
 
-    // for now just show code in console
-    console.log("Invite Code:", inviteCode);
+    return firebaseUser.getIdToken();
+  }
 
-    // later this is where backend/api will check if code is valid
-    alert(`Joining group with code: ${inviteCode}`);
+  // small helper so i do not repeat the same fetch setup
+  async function backendRequest(endpoint, options = {}) {
+    const token = await getToken();
 
-    // later you can send them to dashboard or group page
-    navigate("/dashboard");
-  };
+    const response = await fetch(`http://localhost:3001${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...(options.headers || {}),
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Backend request failed");
+    }
+
+    return data;
+  }
+
+  // this runs when user clicks join group
+  async function handleJoinGroup(e) {
+    e.preventDefault();
+
+    try {
+      setError("");
+      setLoading(true);
+
+      if (!groupId.trim()) {
+        setError("Please enter a group ID");
+        return;
+      }
+
+      // first get the current logged in member from the database
+      // backend route: GET /member/me
+      const member = await backendRequest("/member/me");
+
+      // then create membership for this user and this group
+      // backend route: POST /membership
+      await backendRequest("/membership", {
+        method: "POST",
+        body: JSON.stringify({
+          member_id: member.member_id,
+          group_id: groupId.trim(),
+          role: "MEMBER",
+        }),
+      });
+
+      // after joining, go to the group page
+      navigate(`/group/${groupId.trim()}`);
+    } catch (error) {
+      console.error("Join group error:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="join-group-page">
-      {/* NAVBAR */}
       <nav className="join-group-nav">
         <div className="join-group-logo">AYUUTO</div>
 
@@ -46,25 +105,28 @@ export default function JoinGroupPage() {
         </div>
       </nav>
 
-      {/* MAIN CONTENT */}
       <div className="join-group-container">
         <div className="join-group-header">
           <h1>Join a Group</h1>
-          <p>Enter your invitation code to join a private savings group.</p>
+          <p>
+            Enter the group ID. The current backend supports joining by group ID.
+          </p>
         </div>
 
-        {/* FORM CARD */}
+        {error && <p className="alert alert-warning">{error}</p>}
+
         <form className="join-group-form" onSubmit={handleJoinGroup}>
-          <label>Invitation Code</label>
+          <label>Group ID</label>
+
           <input
             type="text"
-            placeholder="Enter invite code"
-            value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
+            placeholder="Enter group id"
+            value={groupId}
+            onChange={(e) => setGroupId(e.target.value)}
           />
 
           <p className="join-group-note">
-            Ask your group admin for the invitation code.
+            Ask the group admin for the group ID from their group page.
           </p>
 
           <div className="join-group-buttons">
@@ -76,8 +138,8 @@ export default function JoinGroupPage() {
               Back
             </button>
 
-            <button type="submit" className="join-btn">
-              Join Group
+            <button type="submit" className="join-btn" disabled={loading}>
+              {loading ? "Joining..." : "Join Group"}
             </button>
           </div>
         </form>
