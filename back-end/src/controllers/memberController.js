@@ -1,5 +1,5 @@
 import pool from "../dbConnection.js";
-
+ import { Member } from "../model/member.ts";
 const isBlank = (value) =>
   value === undefined || value === null || String(value).trim() === "";
 
@@ -48,8 +48,10 @@ export const getAllMembers = async (req, res) => {
       ORDER BY member_id
       `
     );
+    const member = Member.fromRow(result.rows[0]);
+return res.json(member);
 
-    return res.json(result.rows);
+  
   } catch (err) {
     return sendDatabaseError(res, err, "Error fetching members:");
   }

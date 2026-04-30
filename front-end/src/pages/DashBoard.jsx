@@ -1,6 +1,7 @@
 import Person2Icon from "@mui/icons-material/Person2";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import useUser from "../logicCode/useUser";
 import { auth } from "../logicCode/config";
 import "../css/dashboard.css";
@@ -9,30 +10,72 @@ export default function DashBoard() {
   const { isLoading, user } = useUser();
   const navigate = useNavigate();
 
+  const [groups, setGroups] = useState([]);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+
   const handleLogout = async () => {
     await signOut(auth);
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
-  // temp data (later from backend)
-  const groups = [
-    {
-      id: 1,
-      name: "Friends Savings",
-      amount: "$100 / month",
-      status: "Active",
-      nextPayout: "April 2",
-    },
-    {
-      id: 2,
-      name: "Vacation Fund",
-      amount: "$200 / month",
-      status: "Pending",
-      nextPayout: "April 15",
-    },
-  ];
+  useEffect(() => {
+    const fetchDashboardGroups = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-  if (isLoading) return <p>Loading...</p>;
+        const memberRes = await fetch("http://localhost:3001/member/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const memberData = await memberRes.json();
+
+        if (!memberRes.ok) {
+          throw new Error(memberData.error || "Failed to get current member");
+        }
+
+        const memberId = memberData.member_id;
+
+        const membershipRes = await fetch(
+          `http://localhost:3001/membership/member/${memberId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const membershipData = await membershipRes.json();
+
+        if (!membershipRes.ok) {
+          throw new Error(
+            membershipData.error || "Failed to get memberships"
+          );
+        }
+
+        const formattedGroups = membershipData.map((group) => ({
+          id: group.group_id,
+          name: group.group_name,
+          amount: "Not set yet",
+          status: group.left_date ? "Inactive" : "Active",
+          nextPayout: "Not available",
+        }));
+
+        setGroups(formattedGroups);
+      } catch (error) {
+        console.error("Dashboard error:", error);
+        alert(error.message || "Something went wrong");
+      } finally {
+        setDashboardLoading(false);
+      }
+    };
+
+    fetchDashboardGroups();
+  }, []);
+
+  if (isLoading || dashboardLoading) return <p>Loading...</p>;
 
   return (
     <div className="dashboard-page">
@@ -81,12 +124,12 @@ export default function DashBoard() {
 
           <div className="stat-card">
             <h3>Next Payout</h3>
-            <p>$500</p>
+            <p>{groups.length > 0 ? groups[0].nextPayout : "N/A"}</p>
           </div>
 
           <div className="stat-card">
             <h3>Total Contributions</h3>
-            <p>$1,200</p>
+            <p>Not available</p>
           </div>
         </div>
 
@@ -95,37 +138,43 @@ export default function DashBoard() {
             <h2>Your Groups</h2>
 
             <div className="groups-list">
-              {groups.map((group) => (
-                <div className="group-card" key={group.id}>
-                  <div className="group-card-top">
-                    <div>
-                      <h3>{group.name}</h3>
-                      <p>{group.amount}</p>
+              {groups.length > 0 ? (
+                groups.map((group) => (
+                  <div className="group-card" key={group.id}>
+                    <div className="group-card-top">
+                      <div>
+                        <h3>{group.name}</h3>
+                        <p>{group.amount}</p>
+                      </div>
+
+                      <span
+                        className={
+                          group.status === "Active"
+                            ? "status-badge active"
+                            : "status-badge pending"
+                        }
+                      >
+                        {group.status}
+                      </span>
                     </div>
 
-                    <span
-                      className={
-                        group.status === "Active"
-                          ? "status-badge active"
-                          : "status-badge pending"
-                      }
-                    >
-                      {group.status}
-                    </span>
-                  </div>
+                    <div className="group-card-bottom">
+                      <span>Next payout: {group.nextPayout}</span>
 
-                  <div className="group-card-bottom">
-                    <span>Next payout: {group.nextPayout}</span>
-
-                    <button
-                      className="view-btn"
-                      onClick={() => navigate(`/group/${group.id}`)}
-                    >
-                      View Group
-                    </button>
+                      <button
+                        className="view-btn"
+                        onClick={() => navigate(`/group/${group.id}`)}
+                      >
+                        View Group
+                      </button>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="activity-card">
+                  <p>You are not in any groups yet.</p>
                 </div>
-              ))}
+              )}
             </div>
           </section>
 
@@ -133,15 +182,15 @@ export default function DashBoard() {
             <h2>Upcoming Activity</h2>
 
             <div className="activity-card">
-              <p>Payment due Friday for Friends Savings.</p>
+              <p>Your real group activity will appear here later.</p>
             </div>
 
             <div className="activity-card">
-              <p>Your next payout is scheduled for April 2.</p>
+              <p>Create or join a group to get started.</p>
             </div>
 
             <div className="activity-card">
-              <p>Vacation Fund cycle starts again on April 15.</p>
+              <p>Contribution and payout updates can be added next.</p>
             </div>
           </section>
         </div>
