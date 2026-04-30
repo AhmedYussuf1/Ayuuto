@@ -1,0 +1,103 @@
+@import "./colors.css";
+
+/*
+  This page lets a member make or record a contribution.
+  Since this involves money, I kept the form simple and clear.
+*/
+
+.make-contribution-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+  color: var(--dark-text);
+}
+
+/* Top navbar */
+.make-contribution-nav {
+  background: var(--primary-navy);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* AYUUTO/logo text */
+.make-contribution-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Main content wrapper */
+.make-contribution-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* Page title area */
+.make-contribution-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.make-contribution-header h1 {
+  color: var(--primary-navy);
+}
+
+/* Form card for contribution details */
+.contribution-form {
+  background: var(--light-gray);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Labels are bold so users know what each input is for */
+.contribution-form label {
+  font-weight: 600;
+  color: var(--primary-navy);
+}
+
+/* Inputs, dropdowns, and notes field */
+.contribution-form input,
+.contribution-form select,
+.contribution-form textarea {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+/* Buttons are placed on the right like a typical form */
+.contribution-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Main submit button for saving contribution */
+.submit-contribution-btn {
+  background: var(--emerald-green);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Cancel/back button */
+.cancel-contribution-btn {
+  background: var(--teal);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.submit-contribution-btn:hover,
+.cancel-contribution-btn:hover {
+  opacity: 0.9;
+}

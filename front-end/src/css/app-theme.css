@@ -1,0 +1,130 @@
+:root {
+  --primary-navy: #1f2a44;
+  --emerald-green: #1fa971;
+  --teal: #2fa6a6;
+  --coral-accent: #f07a5f;
+  --warm-beige: #f5efe6;
+  --light-gray: #e6e8ec;
+  --dark-text: #333333;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--warm-beige);
+  color: var(--dark-text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.app-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+}
+
+.brand-navbar {
+  background: var(--primary-navy);
+}
+
+.brand-logo {
+  font-weight: 800;
+  letter-spacing: 0.08rem;
+}
+
+.page-shell {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 32px 18px;
+}
+
+.page-card {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(31, 42, 68, 0.12);
+}
+
+.soft-card {
+  background: var(--white);
+  border: 1px solid rgba(31, 42, 68, 0.08);
+  border-radius: 18px;
+}
+
+.page-title {
+  color: var(--primary-navy);
+  font-weight: 800;
+}
+
+.page-subtitle {
+  color: #5d6472;
+}
+
+.btn-ayuuto-primary {
+  background: var(--emerald-green);
+  color: white;
+  border: none;
+}
+
+.btn-ayuuto-primary:hover {
+  background: #178b5d;
+  color: white;
+}
+
+.btn-ayuuto-secondary {
+  background: var(--teal);
+  color: white;
+  border: none;
+}
+
+.btn-ayuuto-secondary:hover {
+  background: #238b8b;
+  color: white;
+}
+
+.btn-ayuuto-accent {
+  background: var(--coral-accent);
+  color: white;
+  border: none;
+}
+
+.btn-ayuuto-accent:hover {
+  background: #d9654b;
+  color: white;
+}
+
+.stat-box {
+  background: white;
+  border-radius: 18px;
+  padding: 22px;
+  text-align: center;
+  box-shadow: 0 8px 22px rgba(31, 42, 68, 0.08);
+}
+
+.stat-box h3 {
+  color: var(--primary-navy);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.stat-box p {
+  color: var(--emerald-green);
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.form-label {
+  font-weight: 700;
+  color: var(--primary-navy);
+}
+
+.alert-clean {
+  border-radius: 14px;
+}
+
+.hero-image {
+  max-width: 100%;
+  border-radius: 24px;
+}

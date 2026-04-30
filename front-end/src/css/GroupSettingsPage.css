@@ -1,0 +1,103 @@
+@import "./colors.css";
+
+/*
+  This page lets the group admin edit group settings.
+  I made it similar to CreateGroupPage because both pages deal with group form data.
+*/
+
+.group-settings-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+  color: var(--dark-text);
+}
+
+/* Top navbar */
+.group-settings-nav {
+  background: var(--primary-navy);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* AYUUTO/logo text */
+.group-settings-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Main content wrapper */
+.group-settings-container {
+  max-width: 750px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* Page title area */
+.group-settings-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.group-settings-header h1 {
+  color: var(--primary-navy);
+}
+
+/* Settings form card */
+.group-settings-form {
+  background: var(--light-gray);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Labels for each form field */
+.group-settings-form label {
+  font-weight: 600;
+  color: var(--primary-navy);
+}
+
+/* Inputs used for editable group settings */
+.group-settings-form input,
+.group-settings-form select,
+.group-settings-form textarea {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+/* Buttons are aligned to the right for a normal form flow */
+.group-settings-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Save button */
+.save-settings-btn {
+  background: var(--emerald-green);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Cancel button */
+.cancel-settings-btn {
+  background: var(--teal);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.save-settings-btn:hover,
+.cancel-settings-btn:hover {
+  opacity: 0.9;
+}

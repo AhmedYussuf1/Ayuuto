@@ -1,87 +1,222 @@
-// this lets me move between pages
-import { useNavigate } from "react-router-dom";
-
-// this lets me store what user types
 import { useState } from "react";
+import { Alert, Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
-// this is the css for this page
-import "../css/join-group.css";
+/*
+  JoinGroupPage.jsx
 
-// this is the join group page
+  Purpose:
+  Lets a logged-in member join a group using an invite code.
+
+  Backend flow:
+  1. GET /group/code/:invite_code
+     - checks the invite code and returns the group
+  2. POST /membership
+     - creates the membership request using member_id and group_id
+
+  This matches Prototype Version 2 better because users are no longer
+  typing the internal group_id directly unless the invite code maps to it.
+*/
+
 export default function JoinGroupPage() {
   const navigate = useNavigate();
 
-  // this stores the invite code user types
   const [inviteCode, setInviteCode] = useState("");
+  const [foundGroup, setFoundGroup] = useState(null);
 
-  // this runs when user clicks join group
-  const handleJoinGroup = (e) => {
+  const [checking, setChecking] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const checkInviteCode = async (e) => {
     e.preventDefault();
 
-    // if input is empty dont continue
-    if (!inviteCode.trim()) {
-      alert("Please enter an invitation code");
-      return;
+    try {
+      setChecking(true);
+      setError("");
+      setSuccessMessage("");
+      setFoundGroup(null);
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:3001/group/code/${inviteCode}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid invite code.");
+      }
+
+      setFoundGroup(data.group);
+    } catch (err) {
+      setError(err.message || "Could not find group.");
+    } finally {
+      setChecking(false);
     }
+  };
 
-    // for now just show code in console
-    console.log("Invite Code:", inviteCode);
+  const joinGroup = async () => {
+    try {
+      setJoining(true);
+      setError("");
+      setSuccessMessage("");
 
-    // later this is where backend/api will check if code is valid
-    alert(`Joining group with code: ${inviteCode}`);
+      const token = localStorage.getItem("token");
+      const memberId = localStorage.getItem("member_id");
 
-    // later you can send them to dashboard or group page
-    navigate("/dashboard");
+      if (!token || !memberId) {
+        navigate("/login");
+        return;
+      }
+
+      if (!foundGroup?.group_id) {
+        throw new Error("Please verify an invite code first.");
+      }
+
+      const response = await fetch("http://localhost:3001/membership", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          member_id: memberId,
+          group_id: foundGroup.group_id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not request to join group.");
+      }
+
+      setSuccessMessage(
+        data.status === "PENDING"
+          ? "Join request sent. Waiting for admin approval."
+          : "You joined the group successfully."
+      );
+
+      setTimeout(() => {
+        navigate(`/group/${foundGroup.group_id}`);
+      }, 900);
+    } catch (err) {
+      setError(err.message || "Could not join group.");
+    } finally {
+      setJoining(false);
+    }
   };
 
   return (
-    <div className="join-group-page">
-      {/* NAVBAR */}
-      <nav className="join-group-nav">
-        <div className="join-group-logo">AYUUTO</div>
+    <AppLayout showBack backTo="/dashboard">
+      <Row className="justify-content-center">
+        <Col lg={7}>
+          <Card className="page-card">
+            <Card.Body className="p-4">
+              <h1 className="page-title">Join a Group</h1>
 
-        <div className="join-group-nav-links">
-          <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate("/login")}>Logout</button>
-        </div>
-      </nav>
+              <p className="page-subtitle">
+                Enter the invite code shared by the group admin. The system will
+                verify the code before creating your membership request.
+              </p>
 
-      {/* MAIN CONTENT */}
-      <div className="join-group-container">
-        <div className="join-group-header">
-          <h1>Join a Group</h1>
-          <p>Enter your invitation code to join a private savings group.</p>
-        </div>
+              {error && (
+                <Alert variant="danger" className="alert-clean">
+                  {error}
+                </Alert>
+              )}
 
-        {/* FORM CARD */}
-        <form className="join-group-form" onSubmit={handleJoinGroup}>
-          <label>Invitation Code</label>
-          <input
-            type="text"
-            placeholder="Enter invite code"
-            value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
-          />
+              {successMessage && (
+                <Alert variant="success" className="alert-clean">
+                  {successMessage}
+                </Alert>
+              )}
 
-          <p className="join-group-note">
-            Ask your group admin for the invitation code.
-          </p>
+              <Form onSubmit={checkInviteCode}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Invite Code</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={inviteCode}
+                    placeholder="Example: ABCD1234"
+                    onChange={(e) => setInviteCode(e.target.value)}
+                    required
+                  />
+                </Form.Group>
 
-          <div className="join-group-buttons">
-            <button
-              type="button"
-              className="back-btn"
-              onClick={() => navigate("/dashboard")}
-            >
-              Back
-            </button>
+                <div className="d-flex justify-content-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline-secondary"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Cancel
+                  </Button>
 
-            <button type="submit" className="join-btn">
-              Join Group
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+                  <Button
+                    type="submit"
+                    className="btn-ayuuto-primary"
+                    disabled={checking}
+                  >
+                    {checking ? "Checking..." : "Check Code"}
+                  </Button>
+                </div>
+              </Form>
+
+              {checking && (
+                <div className="text-center py-4">
+                  <Spinner animation="border" />
+                  <p className="mt-2">Checking invite code...</p>
+                </div>
+              )}
+
+              {foundGroup && (
+                <Card className="soft-card mt-4">
+                  <Card.Body>
+                    <h2 className="page-title h4">Confirm Group</h2>
+
+                    <p className="mb-1">
+                      <strong>Group:</strong> {foundGroup.group_name}
+                    </p>
+
+                    <p className="mb-1">
+                      <strong>Group ID:</strong> {foundGroup.group_id}
+                    </p>
+
+                    {foundGroup.notes && (
+                      <p className="mb-3">
+                        <strong>Notes:</strong> {foundGroup.notes}
+                      </p>
+                    )}
+
+                    <Button
+                      className="btn-ayuuto-primary"
+                      onClick={joinGroup}
+                      disabled={joining}
+                    >
+                      {joining ? "Joining..." : "Request to Join"}
+                    </Button>
+                  </Card.Body>
+                </Card>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </AppLayout>
   );
 }
