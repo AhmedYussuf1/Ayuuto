@@ -1,53 +1,59 @@
-import type { Id, ISODate } from "./types";
-import type { Member } from "./member";
-import type { Group } from "./group";
-
+ import type { Id, ISODate, InvitationStatus } from "./types";
 
 export class Invitation {
   private _invitationId: Id;
-  private _inviter: Member | null;
-  private _group: Group;
-  private _acceptedDate: ISODate | null;
-  private _expirationDate: ISODate | null;
-  private _inviteeEmail: string;
+  private _groupId: Id;
+  private _email: string;
+  private _status: InvitationStatus;
+  private _invitedAt: ISODate;
 
   constructor(
     invitationId: Id,
-    inviter: Member | null,
-    group: Group,
-    acceptedDate: ISODate | null,
-    expirationDate: ISODate | null,
-    inviteeEmail: string
+    groupId: Id,
+    email: string,
+    status: InvitationStatus,
+    invitedAt: ISODate
   ) {
     this._invitationId = invitationId;
-    this._inviter = inviter;
-    this._group = group;
-    this._acceptedDate = acceptedDate;
-    this._expirationDate = expirationDate;
-    this._inviteeEmail = inviteeEmail;
+    this._groupId = groupId;
+    this._email = email;
+    this._status = status;
+    this._invitedAt = invitedAt;
   }
 
   getInvitationId(): Id {
     return this._invitationId;
   }
 
-  getInviter(): Member | null {
-    return this._inviter;
+  getGroupId(): Id {
+    return this._groupId;
   }
 
-  getGroup(): Group {
-    return this._group;
+  getEmail(): string {
+    return this._email;
   }
 
-  getAcceptedDate(): ISODate | null {
-    return this._acceptedDate;
+  getStatus(): InvitationStatus {
+    return this._status;
   }
 
-  getExpirationDate(): ISODate | null {
-    return this._expirationDate;
+  getInvitedAt(): ISODate {
+    return this._invitedAt;
   }
 
-  getInviteeEmail(): string {
-    return this._inviteeEmail;
+  static fromDatabase(row: {
+    invitation_id: Id;
+    group_id: Id;
+    email: string;
+    status: InvitationStatus;
+    invited_at: ISODate;
+  }): Invitation {
+    return new Invitation(
+      row.invitation_id,
+      row.group_id,
+      row.email,
+      row.status,
+      row.invited_at
+    );
   }
 }

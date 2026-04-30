@@ -1,78 +1,35 @@
-import pool from "../dbConnection.js";
+ import pool from "../dbConnection.js";
+import { Contribution } from "../model/contribution.ts";
+import {
+  isBlank,
+  isValidNonNegativeNumber,
+  toNullableText,
+} from "../utils/requestHelpers.js";
+import { normalizeContributionStatus } from "../utils/enumNormalizers.js";
+import { sendDatabaseError } from "../utils/databaseErrorHandler.js";
+import { contributionErrorMessages } from "../utils/errorMessages.js";
+import { mapRowToResponse } from "../utils/responseMappers.js";
+const contributionToResponse = (contribution) => ({
+  contribution_id: contribution.getContributionId(),
+  membership_id: contribution.getMembershipId(),
+  amount: contribution.getAmount(),
+  contribution_date: contribution.getContributionDate(),
+  status: contribution.getStatus(),
+  note: contribution.getNote(),
+});
 
-const isBlank = (value) =>
-  value === undefined || value === null || String(value).trim() === "";
+const contributionRowToResponse = (row) => {
+  const contribution = Contribution.fromDatabase(row);
 
-const normalizeContributionStatus = (status) => {
-  if (status === undefined) {
-    return undefined;
-  }
-
-  if (status === null || String(status).trim() === "") {
-    return null;
-  }
-
-  const normalized = String(status).trim().toUpperCase();
-  return ["PENDING", "PAID", "FAILED", "REFUNDED"].includes(normalized)
-    ? normalized
-    : null;
+  return {
+    ...contributionToResponse(contribution),
+    member_id: row.member_id,
+    group_id: row.group_id,
+    full_name: row.full_name,
+    email: row.email,
+  };
 };
-
-const toNullableText = (value) => {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (value === null) {
-    return null;
-  }
-
-  const trimmed = String(value).trim();
-  return trimmed === "" ? null : trimmed;
-};
-
-const isValidNonNegativeNumber = (value) => {
-  if (value === undefined || value === null || value === "") {
-    return false;
-  }
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0;
-};
-
-const sendDatabaseError = (res, err, contextMessage) => {
-  console.error(contextMessage, err);
-
-  if (err.code === "23503") {
-    return res.status(400).json({
-      error: "membership_id does not reference an existing membership",
-      detail: err.detail,
-    });
-  }
-
-  if (err.code === "23505") {
-    return res.status(409).json({
-      error: "Only one contribution per membership per day is allowed",
-      detail: err.detail,
-    });
-  }
-
-  if (err.code === "23514") {
-    return res.status(400).json({
-      error: "One or more values do not satisfy the database rules",
-      detail: err.detail || err.message,
-    });
-  }
-
-  if (err.code === "22P02") {
-    return res.status(400).json({
-      error: "One or more values have an invalid format",
-      detail: err.message,
-    });
-  }
-
-  return res.status(500).json({ error: err.message });
-};
+ 
 
 export const createContribution = async (req, res) => {
   try {
@@ -114,7 +71,13 @@ export const createContribution = async (req, res) => {
         COALESCE($4, 'PAID'),
         $5
       )
-      RETURNING contribution_id, membership_id, amount, contribution_date, status, note
+      RETURNING
+        contribution_id,
+        membership_id,
+        amount,
+        contribution_date,
+        status,
+        note
       `,
       [
         membership_id,
@@ -125,9 +88,18 @@ export const createContribution = async (req, res) => {
       ]
     );
 
-    return res.status(201).json(result.rows[0]);
+    return res
+      .status(201)
+      .json(
+        mapRowToResponse(result.rows[0], Contribution, contributionToResponse)
+      );
   } catch (err) {
-    return sendDatabaseError(res, err, "Create contribution error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Create contribution error:",
+      contributionErrorMessages
+    );
   }
 };
 
@@ -159,9 +131,14 @@ export const getContributionsByGroupId = async (req, res) => {
       [id]
     );
 
-    return res.json(result.rows);
+    return res.json(result.rows.map(contributionRowToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Get contributions by group error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Get contributions by group error:",
+      contributionErrorMessages
+    );
   }
 };
 
@@ -193,8 +170,13 @@ export const getContributionsByMemberId = async (req, res) => {
       [id]
     );
 
-    return res.json(result.rows);
+    return res.json(result.rows.map(contributionRowToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Get contributions by member error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Get contributions by member error:",
+      contributionErrorMessages
+    );
   }
 };

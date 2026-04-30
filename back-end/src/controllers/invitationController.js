@@ -1,24 +1,11 @@
-import pool from "../dbConnection.js";
+ import pool from "../dbConnection.js";
+import { Invitation } from "../model/invitation.ts";
+import { hasOwn, isBlank } from "../utils/requestHelpers.js";
+import { normalizeInvitationStatus } from "../utils/enumNormalizers.js";
+import { sendDatabaseError } from "../utils/databaseErrorHandler.js";
+import { mapRowToResponse, mapRowsToResponse } from "../utils/responseMappers.js";
+import { invitationErrorMessages } from "../utils/errorMessages.js";
 
-const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-
-const isBlank = (value) =>
-  value === undefined || value === null || String(value).trim() === "";
-
-const normalizeInvitationStatus = (status) => {
-  if (status === undefined) {
-    return undefined;
-  }
-
-  if (status === null || String(status).trim() === "") {
-    return null;
-  }
-
-  const normalized = String(status).trim().toUpperCase();
-  return ["PENDING", "ACCEPTED", "EXPIRED", "CANCELED"].includes(normalized)
-    ? normalized
-    : null;
-};
 
 const normalizeEmail = (email) => {
   if (email === undefined) {
@@ -33,39 +20,15 @@ const normalizeEmail = (email) => {
   return trimmed === "" ? null : trimmed;
 };
 
-const sendDatabaseError = (res, err, contextMessage) => {
-  console.error(contextMessage, err);
+const invitationToResponse = (invitation) => ({
+  invitation_id: invitation.getInvitationId(),
+  group_id: invitation.getGroupId(),
+  email: invitation.getEmail(),
+  status: invitation.getStatus(),
+  invited_at: invitation.getInvitedAt(),
+});
 
-  if (err.code === "23503") {
-    return res.status(400).json({
-      error: "group_id does not reference an existing group",
-      detail: err.detail,
-    });
-  }
-
-  if (err.code === "23505") {
-    return res.status(409).json({
-      error: "A pending invitation already exists for this email in this group",
-      detail: err.detail,
-    });
-  }
-
-  if (err.code === "23514") {
-    return res.status(400).json({
-      error: "One or more values do not satisfy the database rules",
-      detail: err.detail || err.message,
-    });
-  }
-
-  if (err.code === "22P02") {
-    return res.status(400).json({
-      error: "One or more values have an invalid format",
-      detail: err.message,
-    });
-  }
-
-  return res.status(500).json({ error: err.message });
-};
+ 
 
 export const createInvitation = async (req, res) => {
   try {
@@ -87,16 +50,38 @@ export const createInvitation = async (req, res) => {
 
     const result = await pool.query(
       `
-      INSERT INTO public.invitation (group_id, email, status, invited_at)
-      VALUES ($1, $2, COALESCE($3, 'PENDING'), COALESCE($4, NOW()))
+      INSERT INTO public.invitation (
+        group_id,
+        email,
+        status,
+        invited_at
+      )
+      VALUES (
+        $1,
+        $2,
+        COALESCE($3, 'PENDING'),
+        COALESCE($4, NOW())
+      )
       RETURNING invitation_id, group_id, email, status, invited_at
       `,
-      [group_id, normalizeEmail(email), normalizedStatus ?? null, invited_at || null]
+      [
+        group_id,
+        normalizeEmail(email),
+        normalizedStatus ?? null,
+        invited_at || null,
+      ]
     );
 
-    return res.status(201).json(result.rows[0]);
+    return res
+      .status(201)
+      .json(mapRowToResponse(result.rows[0], Invitation, invitationToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Create invitation error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Create invitation error:",
+      invitationErrorMessages
+    );
   }
 };
 
@@ -114,9 +99,14 @@ export const getInvitationsByGroupId = async (req, res) => {
       [id]
     );
 
-    return res.json(result.rows);
+    return res.json(mapRowsToResponse(result.rows, Invitation, invitationToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Get invitations by group error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Get invitations by group error:",
+      invitationErrorMessages
+    );
   }
 };
 
@@ -139,6 +129,12 @@ export const updateInvitation = async (req, res) => {
     }
 
     const current = existing.rows[0];
+
+    if (hasOwn(body, "group_id") && isBlank(body.group_id)) {
+      return res.status(400).json({
+        error: "group_id cannot be blank",
+      });
+    }
 
     if (hasOwn(body, "email") && !normalizeEmail(body.email)) {
       return res.status(400).json({
@@ -176,8 +172,15 @@ export const updateInvitation = async (req, res) => {
       ]
     );
 
-    return res.json(result.rows[0]);
+    return res.json(
+      mapRowToResponse(result.rows[0], Invitation, invitationToResponse)
+    );
   } catch (err) {
-    return sendDatabaseError(res, err, "Update invitation error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Update invitation error:",
+      invitationErrorMessages
+    );
   }
 };

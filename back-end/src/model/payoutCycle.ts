@@ -4,53 +4,70 @@ import type {
   PayoutCycleFrequency,
   PayoutCycleStatus,
 } from "./types";
-import { Contribution } from "./contribution";
 
 export class PayoutCycle {
+  private _payoutCycleId: Id;
+  private _groupId: Id;
   private _frequency: PayoutCycleFrequency;
-  private _payoutId: Id | null;
-  private _contribution: Contribution | null;
-  private _amount: Money;
-  private _payoutOrder: number | null;
+  private _contributionAmount: Money;
   private _status: PayoutCycleStatus;
+  private _currentRecipientMembershipId: Id | null;
 
   constructor(
+    payoutCycleId: Id,
+    groupId: Id,
     frequency: PayoutCycleFrequency,
-    payoutId: Id | null,
-    contribution: Contribution | null,
-    amount: Money,
-    payoutOrder: number | null,
-    status: PayoutCycleStatus
+    contributionAmount: Money,
+    status: PayoutCycleStatus,
+    currentRecipientMembershipId: Id | null
   ) {
+    this._payoutCycleId = payoutCycleId;
+    this._groupId = groupId;
     this._frequency = frequency;
-    this._payoutId = payoutId;
-    this._contribution = contribution;
-    this._amount = amount;
-    this._payoutOrder = payoutOrder;
+    this._contributionAmount = contributionAmount;
     this._status = status;
+    this._currentRecipientMembershipId = currentRecipientMembershipId;
+  }
+
+  getPayoutCycleId(): Id {
+    return this._payoutCycleId;
+  }
+
+  getGroupId(): Id {
+    return this._groupId;
   }
 
   getFrequency(): PayoutCycleFrequency {
     return this._frequency;
   }
 
-  getPayoutId(): Id | null {
-    return this._payoutId;
-  }
-
-  getContribution(): Contribution | null {
-    return this._contribution;
-  }
-
-  getAmount(): Money {
-    return this._amount;
-  }
-
-  getPayoutOrder(): number | null {
-    return this._payoutOrder;
+  getContributionAmount(): Money {
+    return this._contributionAmount;
   }
 
   getStatus(): PayoutCycleStatus {
     return this._status;
+  }
+
+  getCurrentRecipientMembershipId(): Id | null {
+    return this._currentRecipientMembershipId;
+  }
+
+  static fromDatabase(row: {
+    payout_cycle_id: Id;
+    group_id: Id;
+    frequency: PayoutCycleFrequency;
+    contribution_amount: Money;
+    status: PayoutCycleStatus;
+    current_recipient_membership_id: Id | null;
+  }): PayoutCycle {
+    return new PayoutCycle(
+      row.payout_cycle_id,
+      row.group_id,
+      row.frequency,
+      row.contribution_amount,
+      row.status,
+      row.current_recipient_membership_id
+    );
   }
 }
