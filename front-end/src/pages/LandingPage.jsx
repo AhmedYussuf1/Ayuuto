@@ -1,31 +1,85 @@
-import Card from "../ui_components/Card";
-import logo from "../assets/ Warm_browns_logo.png";
-import Logo from "../ui_components/Logo"
-import "../css/App.css";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
- 
-export default function LandingPag() {
+
+// These are image files from your assets folder.
+// The logo is used for branding, and the community image makes the landing page look more professional.
+import communityImg from "../assets/community.png";
+import logo from "../assets/ayuuto_logo.png";
+
+/*
+  LandingPage.jsx
+
+  Purpose:
+  This is the first page users see before logging in.
+
+  Backend connection:
+  This page does NOT call the backend.
+  It only gives the user two choices:
+  1. Log in
+  2. Create account
+
+  Design choice:
+  I used React Bootstrap here so the page looks cleaner with less custom CSS.
+*/
+
+export default function LandingPage() {
+  // useNavigate lets us move to another route/page when a button is clicked.
   const navigate = useNavigate();
 
-    return(
+  return (
+    <div className="app-page">
+      <Container className="py-5">
+        <Row className="align-items-center g-5 min-vh-100">
+          {/* Left side: text and buttons */}
+          <Col lg={6}>
+            <img
+              src={logo}
+              alt="Ayuuto logo"
+              style={{ width: "110px", borderRadius: "24px" }}
+              className="mb-4"
+            />
 
-      <div className="container-fluid  mb-5 justify-content-center">
+            <h1 className="page-title display-4">
+              Build savings groups with trust and clarity.
+            </h1>
 
-        <Card className="card m-0   bg-danger shadow-lg" >
-          <Logo logoSoruce={logo} className="img-fluid   " style={{
+            <p className="page-subtitle fs-5 mt-3">
+              Ayuuto helps community savings groups track members,
+              contributions, payouts, and invitations in one simple place.
+            </p>
 
-            maxHeight: "50px", width: "auto", border: "234px  solid black "
+            {/* These buttons send the user to the auth pages */}
+            <div className="d-flex gap-3 mt-4">
+              <Button
+                className="btn-ayuuto-primary px-4"
+                size="lg"
+                onClick={() => navigate("/login")}
+              >
+                Log In
+              </Button>
 
-          }} />
-          <p className="display-6 align-center lead  mt-2 ps-3  card shadow-md " style={{ letterSpacing: " .2rem", border: "none", margin: " 4px, 3px auto" }}>Build wealth together through community savings</p>
-          <button className="btn btn-outline-primary btn-lg mb-3 b" onClick={() => navigate("/login")} >
-   LogIn
-    </button>
+              <Button
+                className="btn-ayuuto-secondary px-4"
+                size="lg"
+                onClick={() => navigate("/signup")}
+              >
+                Create Account
+              </Button>
+            </div>
+          </Col>
 
-          <button className="btn btn-outline-primary btn-lg" onClick={() => navigate("/signup")} >
-            Create account
-    </button>
-        </Card>
-      </div>
-    );
+          {/* Right side: illustration */}
+          <Col lg={6}>
+            <Card className="page-card p-3">
+              <Card.Img
+                src={communityImg}
+                alt="Community savings illustration"
+                className="hero-image"
+              />
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
+  );
 }

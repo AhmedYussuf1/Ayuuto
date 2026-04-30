@@ -1,207 +1,299 @@
-import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import "../css/view-group.css";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  ListGroup,
+  Row,
+  Spinner,
+} from "react-bootstrap";
+import { useNavigate, useParams } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
+
+/*
+  ViewGroupPage.jsx
+
+  Purpose:
+  This page shows one group.
+
+  Backend route used:
+  GET /group/:id
+
+  This page also checks the logged-in user's membership role so the UI can show:
+  - normal member actions
+  - admin-only actions
+
+  Member actions:
+  - Make Contribution
+  - View Contributions
+  - View Payouts
+
+  Admin actions:
+  - Invite Members
+  - Group Settings
+  - Manage Members
+
+  Important:
+  This is frontend role-based hiding. The backend should still enforce
+  admin permissions in a stronger production version.
+*/
 
 export default function ViewGroupPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [group, setGroup] = useState(null);
-  const [members, setMembers] = useState([]);
+  const [groupData, setGroupData] = useState(null);
+  const [currentMembership, setCurrentMembership] = useState(null);
+
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchGroupData = async () => {
-      try {
-        const token = localStorage.getItem("token");
+    loadGroup();
+  }, [id]);
 
-        const groupRes = await fetch(`http://localhost:3001/group/${id}`, {
+  const loadGroup = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const token = localStorage.getItem("token");
+      const memberId = localStorage.getItem("member_id");
+
+      if (!token || !memberId) {
+        navigate("/login");
+        return;
+      }
+
+      /*
+        First backend call:
+        GET /group/:id
+
+        This returns group details, payout cycle, and members.
+      */
+      const groupResponse = await fetch(`http://localhost:3001/group/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const groupResult = await groupResponse.json();
+
+      if (!groupResponse.ok) {
+        throw new Error(groupResult.error || "Failed to load group.");
+      }
+
+      setGroupData(groupResult);
+
+      /*
+        Second backend call:
+        GET /membership/member/:member_id
+
+        This returns all memberships for the logged-in user.
+        We find the one for this group so we know if they are ADMIN or MEMBER.
+      */
+      const membershipResponse = await fetch(
+        `http://localhost:3001/membership/member/${memberId}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-
-        const groupData = await groupRes.json();
-
-        if (!groupRes.ok) {
-          throw new Error(groupData.error || "Failed to load group");
         }
+      );
 
-        const membershipRes = await fetch(
-          `http://localhost:3001/membership/group/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      const membershipResult = await membershipResponse.json();
 
-        const membershipData = await membershipRes.json();
-
-        if (!membershipRes.ok) {
-          throw new Error(membershipData.error || "Failed to load members");
-        }
-
-        setGroup(groupData);
-        setMembers(membershipData);
-      } catch (error) {
-        console.error("View group error:", error);
-        alert(error.message || "Something went wrong");
-      } finally {
-        setLoading(false);
+      if (!membershipResponse.ok) {
+        throw new Error("Could not load your membership role.");
       }
-    };
 
-    fetchGroupData();
-  }, [id]);
+      const match = membershipResult.find(
+        (membership) => String(membership.group_id) === String(id)
+      );
 
-  const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(`GROUP-${id}`);
-      alert("Group code copied");
-    } catch (error) {
-      alert("Could not copy code");
+      setCurrentMembership(match || null);
+    } catch (err) {
+      setError(err.message || "Group failed to load.");
+    } finally {
+      setLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="view-group-page">Loading group...</div>;
+    return (
+      <AppLayout showBack backTo="/dashboard">
+        <div className="text-center py-5">
+          <Spinner animation="border" />
+          <p className="mt-3">Loading group...</p>
+        </div>
+      </AppLayout>
+    );
   }
 
-  if (!group) {
-    return <div className="view-group-page">Group not found.</div>;
+  if (error) {
+    return (
+      <AppLayout showBack backTo="/dashboard">
+        <Alert variant="danger" className="alert-clean">
+          {error}
+        </Alert>
+      </AppLayout>
+    );
   }
+
+  if (!groupData) {
+    return (
+      <AppLayout showBack backTo="/dashboard">
+        <Alert variant="warning" className="alert-clean">
+          No group found.
+        </Alert>
+      </AppLayout>
+    );
+  }
+
+  const { group, payout_cycle, members } = groupData;
+
+  /*
+    If role is ADMIN, show admin-only buttons.
+  */
+  const isAdmin = currentMembership?.role === "ADMIN";
 
   return (
-    <div className="view-group-page">
-      <nav className="view-group-nav">
-        <div className="view-group-logo">AYUUTO</div>
+    <AppLayout showBack backTo="/dashboard">
+      <Row className="align-items-start mb-4 g-3">
+        <Col>
+          <h1 className="page-title mb-1">{group.group_name}</h1>
 
-        <div className="view-group-nav-links">
-          <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate("/login")}>Logout</button>
-        </div>
-      </nav>
+          <p className="page-subtitle mb-2">
+            Group ID / Join Code: <strong>{group.group_id}</strong>
+          </p>
 
-      <div className="view-group-container">
-        <div className="view-group-header">
-          <div>
-            <h1>{group.group_name}</h1>
-            <p>
-              Start Date: {group.start_cycle_date} | Status: Active
-            </p>
-          </div>
+          {group.notes && <p className="mb-0">{group.notes}</p>}
+        </Col>
 
-          <button className="back-btn" onClick={() => navigate("/dashboard")}>
-            Back to Dashboard
-          </button>
-        </div>
+        <Col xs="auto">
+          <Badge bg={isAdmin ? "success" : "secondary"} className="fs-6">
+            Your Role: {currentMembership?.role || "Unknown"}
+          </Badge>
+        </Col>
+      </Row>
 
-        <div className="view-group-stats">
-          <div className="group-stat-card">
+      <Row className="g-3 mb-4">
+        <Col md={4}>
+          <div className="stat-box">
             <h3>Members</h3>
-            <p>{members.length}</p>
+            <p>{members?.length || 0}</p>
           </div>
+        </Col>
 
-          <div className="group-stat-card">
-            <h3>Next Payout</h3>
-            <p>{members.length > 0 ? members[0].full_name : "N/A"}</p>
+        <Col md={4}>
+          <div className="stat-box">
+            <h3>Frequency</h3>
+            <p>{payout_cycle?.frequency || "N/A"}</p>
           </div>
+        </Col>
 
-          <div className="group-stat-card">
-            <h3>Total Saved</h3>
-            <p>--</p>
+        <Col md={4}>
+          <div className="stat-box">
+            <h3>Contribution</h3>
+            <p>${payout_cycle?.contribution_amount || 0}</p>
           </div>
-        </div>
+        </Col>
+      </Row>
 
-        <section className="invite-section">
-          <div className="invite-section-text">
-            <h2>Invite Members</h2>
-            <p>Share this private code so invited users can join your group.</p>
-          </div>
+      <Row className="g-3 mb-4">
+        <Col md={6} lg={3}>
+          <Button
+            className="btn-ayuuto-primary w-100"
+            onClick={() => navigate(`/group/${id}/contribution`)}
+          >
+            Make Contribution
+          </Button>
+        </Col>
 
-          <div className="invite-code-box">
-            <span className="invite-code-label">Group Code</span>
-            <div className="invite-code-row">
-              <div className="invite-code-value">{`GROUP-${id}`}</div>
+        <Col md={6} lg={3}>
+          <Button
+            className="btn-ayuuto-secondary w-100"
+            onClick={() => navigate(`/group/${id}/contributions`)}
+          >
+            View Contributions
+          </Button>
+        </Col>
 
-              <button className="copy-btn" onClick={handleCopyCode}>
-                Copy Code
-              </button>
+        <Col md={6} lg={3}>
+          <Button
+            className="btn-ayuuto-secondary w-100"
+            onClick={() => navigate(`/group/${id}/payouts`)}
+          >
+            View Payouts
+          </Button>
+        </Col>
 
-              <button
-                className="copy-btn"
+        {isAdmin && (
+          <>
+            <Col md={6} lg={3}>
+              <Button
+                className="btn-ayuuto-accent w-100"
                 onClick={() => navigate(`/group/${id}/invite`)}
               >
-                Manage Invites
-              </button>
+                Invite Members
+              </Button>
+            </Col>
 
-              <button
-                className="copy-btn"
-                onClick={() => navigate(`/group/${id}/approve-members`)}
-              >
-                Approve Members
-              </button>
-
-              <button
-                className="copy-btn"
-                onClick={() => navigate(`/group/${id}/contribute`)}
-              >
-                Make Contribution
-              </button>
-
-              <button
-                className="copy-btn"
-                onClick={() => navigate(`/group/${id}/payouts`)}
-              >
-                View Payouts
-              </button>
-
-              <button
-                className="copy-btn"
+            <Col md={6} lg={3}>
+              <Button
+                variant="dark"
+                className="w-100"
                 onClick={() => navigate(`/group/${id}/settings`)}
               >
                 Group Settings
-              </button>
-            </div>
-          </div>
-        </section>
+              </Button>
+            </Col>
 
-        <div className="view-group-grid">
-          <section className="view-group-section">
-            <h2>Members</h2>
+            <Col md={6} lg={3}>
+              <Button
+                variant="dark"
+                className="w-100"
+                onClick={() => navigate(`/group/${id}/manage-members`)}
+              >
+                Manage Members
+              </Button>
+            </Col>
+          </>
+        )}
+      </Row>
 
-            <div className="members-list">
-              {members.map((member) => (
-                <div className="member-card" key={member.membership_id}>
-                  <div>
-                    <h3>{member.full_name}</h3>
-                    <p>{member.role}</p>
-                  </div>
+      {!isAdmin && (
+        <Alert variant="info" className="alert-clean">
+          Member view: admin-only actions like inviting members, changing group
+          settings, and managing members are hidden.
+        </Alert>
+      )}
 
-                  <span className="payout-badge">
-                    Payout Position {member.payout_position ?? "N/A"}
-                  </span>
+      <Card className="page-card">
+        <Card.Body>
+          <h2 className="page-title h4">Members</h2>
+
+          <ListGroup variant="flush">
+            {members?.map((member) => (
+              <ListGroup.Item
+                key={member.membership_id}
+                className="d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  <strong>{member.full_name || "Unnamed Member"}</strong>
+                  <div className="page-subtitle small">{member.email}</div>
                 </div>
-              ))}
-            </div>
-          </section>
 
-          <section className="view-group-section">
-            <h2>Recent Activity</h2>
-
-            <div className="group-activity-card">
-              <p>Group loaded successfully.</p>
-            </div>
-            <div className="group-activity-card">
-              <p>{members.length} member(s) currently in this group.</p>
-            </div>
-            <div className="group-activity-card">
-              <p>Start cycle date: {group.start_cycle_date}</p>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
+                <Badge bg={member.role === "ADMIN" ? "success" : "secondary"}>
+                  {member.role}
+                </Badge>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Card.Body>
+      </Card>
+    </AppLayout>
   );
 }

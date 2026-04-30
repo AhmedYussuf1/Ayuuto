@@ -1,0 +1,66 @@
+@import "./colors.css";
+
+/* 
+  Page for creating a group.
+  Uses a centered form card for clarity.
+*/
+
+.create-group-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+  color: var(--dark-text);
+}
+
+/* navbar */
+.create-group-nav {
+  background: var(--primary-navy);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* main container */
+.create-group-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 40px;
+}
+
+/* form card */
+.create-group-form {
+  background: var(--light-gray);
+  padding: 25px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* inputs */
+.create-group-form input,
+.create-group-form select,
+.create-group-form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* buttons row */
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* cancel button */
+.cancel-btn {
+  background: var(--teal);
+  color: white;
+}
+
+/* submit button */
+.submit-btn {
+  background: var(--emerald-green);
+  color: white;
+}

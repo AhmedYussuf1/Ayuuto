@@ -1,47 +1,78 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import "../css/create-group.css";
+import { Alert, Button, Card, Col, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
+
+/*
+  CreateGroupPage.jsx
+
+  Purpose:
+  This page lets a logged-in user create a new savings group.
+
+  Backend route used:
+  POST /group
+
+  Important backend behavior:
+  The backend does more than create a group.
+
+  It should:
+  1. Create the group row
+  2. Create the payout cycle row
+  3. Make the creator an ADMIN through the membership table
+
+  That means the frontend does NOT need to call POST /membership
+  after creating a group. The backend handles creator membership.
+*/
 
 export default function CreateGroupPage() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    groupName: "",
-    contributionAmount: "",
-    startDate: "",
-    frequency: "",
-    notes: "",
-  });
+  /*
+    These state variables store form values.
+    I named them close to the backend fields so the code is easier to explain.
+  */
+  const [groupName, setGroupName] = useState("");
+  const [startCycleDate, setStartCycleDate] = useState("");
+  const [frequency, setFrequency] = useState("Weekly");
+  const [contributionAmount, setContributionAmount] = useState("");
+  const [notes, setNotes] = useState("");
 
+  /*
+    loading prevents double clicking the submit button.
+    error shows backend problems on the page.
+  */
   const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.groupName.trim()) {
-      alert("Please enter a group name");
-      return;
-    }
-
-    if (!formData.startDate) {
-      alert("Please select a start date");
-      return;
-    }
-
     try {
       setLoading(true);
+      setError("");
 
+      /*
+        Protected backend route:
+        The backend needs the Firebase token to know who is creating the group.
+      */
       const token = localStorage.getItem("token");
 
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      /*
+        Backend route:
+        POST /group
+
+        Body fields:
+        - group_name
+        - start_cycle_date
+        - notes
+        - frequency
+        - contribution_amount
+      */
       const response = await fetch("http://localhost:3001/group", {
         method: "POST",
         headers: {
@@ -49,108 +80,139 @@ export default function CreateGroupPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          group_name: formData.groupName,
-          start_cycle_date: formData.startDate,
+          group_name: groupName,
+          start_cycle_date: startCycleDate,
+          notes,
+          frequency,
+          contribution_amount: contributionAmount,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create group");
+        throw new Error(data.error || "Could not create group.");
       }
 
-      alert("Group created successfully");
+      /*
+        After the backend creates the group,
+        it returns the new group_id.
 
-      if (data.group_id) {
-        navigate(`/group/${data.group_id}`);
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.error("Create group error:", error);
-      alert(error.message || "Something went wrong");
+        Then we send the user directly to:
+        /group/:id
+      */
+      navigate(`/group/${data.group.group_id}`);
+    } catch (err) {
+      setError(err.message || "Could not create group.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="create-group-page">
-      <nav className="create-group-nav">
-        <div className="create-group-logo">AYUUTO</div>
+    <AppLayout showBack backTo="/dashboard">
+      <Row className="justify-content-center">
+        <Col lg={8}>
+          <Card className="page-card">
+            <Card.Body className="p-4">
+              <h1 className="page-title">Create a Group</h1>
 
-        <div className="create-group-nav-links">
-          <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate("/login")}>Logout</button>
-        </div>
-      </nav>
+              <p className="page-subtitle">
+                Set up a savings group with a start date, contribution amount,
+                and payout frequency.
+              </p>
 
-      <div className="create-group-container">
-        <div className="create-group-header">
-          <h1>Create a New Group</h1>
-          <p>Set up a savings group</p>
-        </div>
+              {error && (
+                <Alert variant="danger" className="alert-clean">
+                  {error}
+                </Alert>
+              )}
 
-        <form className="create-group-form" onSubmit={handleSubmit}>
-          <label>Group Name</label>
-          <input
-            type="text"
-            name="groupName"
-            value={formData.groupName}
-            onChange={handleChange}
-          />
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Group Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={groupName}
+                    placeholder="Example: Family Savings Group"
+                    onChange={(e) => setGroupName(e.target.value)}
+                    required
+                  />
+                </Form.Group>
 
-          <label>Contribution Amount</label>
-          <input
-            type="number"
-            name="contributionAmount"
-            value={formData.contributionAmount}
-            onChange={handleChange}
-          />
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Start Cycle Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={startCycleDate}
+                        onChange={(e) => setStartCycleDate(e.target.value)}
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
 
-          <label>Start Date</label>
-          <input
-            type="date"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleChange}
-          />
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Frequency</Form.Label>
+                      <Form.Select
+                        value={frequency}
+                        onChange={(e) => setFrequency(e.target.value)}
+                      >
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-          <label>Frequency</label>
-          <select
-            name="frequency"
-            value={formData.frequency}
-            onChange={handleChange}
-          >
-            <option value="">Select</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-          </select>
+                <Form.Group className="mb-3">
+                  <Form.Label>Contribution Amount</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={contributionAmount}
+                    placeholder="Example: 50"
+                    onChange={(e) => setContributionAmount(e.target.value)}
+                    required
+                  />
+                </Form.Group>
 
-          <label>Notes</label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-          />
+                <Form.Group className="mb-4">
+                  <Form.Label>Notes</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    value={notes}
+                    placeholder="Optional notes about this group"
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </Form.Group>
 
-          <div className="form-buttons">
-            <button
-              type="button"
-              className="cancel-btn"
-              onClick={() => navigate("/dashboard")}
-              disabled={loading}
-            >
-              Cancel
-            </button>
+                <div className="d-flex justify-content-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline-secondary"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Cancel
+                  </Button>
 
-            <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? "Creating..." : "Create Group"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+                  <Button
+                    type="submit"
+                    className="btn-ayuuto-primary"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "Create Group"}
+                  </Button>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </AppLayout>
   );
 }

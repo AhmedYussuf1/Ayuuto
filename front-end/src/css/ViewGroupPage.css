@@ -1,0 +1,125 @@
+@import "./colors.css";
+
+/*
+  This page shows the details for one group.
+  I used cards and sections so the user can quickly see group stats,
+  actions, and group information without everything blending together.
+*/
+
+.view-group-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+  color: var(--dark-text);
+}
+
+/* Top navigation bar for this page */
+.view-group-nav {
+  background: var(--primary-navy);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* AYUUTO text/logo area */
+.view-group-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Holds buttons/links on the right side of the navbar */
+.view-group-nav-links {
+  display: flex;
+  gap: 12px;
+}
+
+/* Navbar buttons are kept simple so the navy bar stays clean */
+.view-group-nav-links button {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* Main page content wrapper */
+.view-group-container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 30px;
+}
+
+/* Header area for the group name and basic intro */
+.view-group-header {
+  margin-bottom: 24px;
+}
+
+.view-group-header h1 {
+  color: var(--primary-navy);
+}
+
+/* Group stats are shown in a 3-column grid */
+.view-group-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+/* Individual stat boxes */
+.view-stat-card {
+  background: var(--light-gray);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Stat titles */
+.view-stat-card h3 {
+  color: var(--primary-navy);
+}
+
+/* Stat numbers, usually money or totals */
+.view-stat-card p {
+  color: var(--emerald-green);
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* Action buttons for things like invite, contribute, payouts, settings */
+.view-group-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* Base style for all action buttons in this section */
+.view-group-actions button {
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  color: white;
+  cursor: pointer;
+}
+
+/* Alternates button colors so actions are easier to separate visually */
+.view-group-actions button:nth-child(odd) {
+  background: var(--teal);
+}
+
+.view-group-actions button:nth-child(even) {
+  background: var(--coral-accent);
+}
+
+/* White section cards for group information */
+.view-group-section {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.view-group-section h2 {
+  color: var(--primary-navy);
+}
