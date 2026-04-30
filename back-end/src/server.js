@@ -1,43 +1,41 @@
-  import express from "express";
+import express from "express";
 import cors from "cors";
 import admin from "firebase-admin";
 import fs from "fs";
 
 import verifyFirebaseToken from "./middleware/verifyFirebaseToken.js";
+
 import memberRoutes from "./routes/memberRoutes.js";
 import groupRoutes from "./routes/groupRoutes.js";
- import contributionRoutes from "./routes/contributionRoutes.js";
+import membershipRoutes from "./routes/membershipRoutes.js";
+import contributionRoutes from "./routes/contributionRoutes.js";
 import payoutRoutes from "./routes/payoutRoutes.js";
-import invitationRoutes from  "./routes/invitationRoutes.js";
- import membershipRoutes from "./routes/membershipRoutes.js";
+import invitationRoutes from "./routes/invitationRoutes.js";
 
 const app = express();
-app.use(cors({
-  origin: ["http://localhost:5173",   "http://localhost:5173",
-      "http://localhost:5174"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
-// Middleware
-app.use(express.json());
 const PORT = 3001;
-// Routes
-app.use("/member", memberRoutes);
-app.use("/group", groupRoutes);
-app.use("/membership", membershipRoutes);
-app.use("/contribution", contributionRoutes); //GET /contribution/group/1
-app.use("/payout", payoutRoutes); //GET /payout/group/1
-app.use("/invitation", invitationRoutes); //GET /invitation/group/1
 
 // Load Firebase credentials
 const credential = JSON.parse(
   fs.readFileSync("./config/firebase_cr.json", "utf8")
 );
 
-// Initialize Firebase Admin SDK
+// Initialize Firebase Admin SDK before protected routes are used
 admin.initializeApp({
   credential: admin.credential.cert(credential),
 });
+
+// CORS setup
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Middleware
+app.use(express.json());
 
 // Helper function to extract token from Authorization header
 const getTokenFromHeader = (req) => {
@@ -65,7 +63,7 @@ app.get("/token-test", (req, res) => {
     });
   }
 
-  res.json({
+  return res.json({
     message: "Token extracted successfully",
     token,
   });
@@ -73,11 +71,19 @@ app.get("/token-test", (req, res) => {
 
 // Protected test route
 app.get("/protected", verifyFirebaseToken, (req, res) => {
-  res.json({
+  return res.json({
     message: "Access granted",
     user: req.user,
   });
 });
+
+// Routes
+app.use("/member", memberRoutes);
+app.use("/group", groupRoutes);
+app.use("/membership", membershipRoutes);
+app.use("/contribution", contributionRoutes);
+app.use("/payout", payoutRoutes);
+app.use("/invitation", invitationRoutes);
 
 // Start server
 app.listen(PORT, () => {

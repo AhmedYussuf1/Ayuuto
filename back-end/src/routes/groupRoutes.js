@@ -1,16 +1,21 @@
 import express from "express";
 import verifyFirebaseToken from "../middleware/verifyFirebaseToken.js";
- import {
+import {
   createGroup,
- getGroupById,
+  getGroupById,
+  getGroupByInviteCode,
   getMembersByGroupId,
   updateGroup,
 } from "../controllers/groupController.js";
 
- const router = express.Router();
+const router = express.Router();
 
 router.post("/", verifyFirebaseToken, createGroup);
- router.get("/:id/members", verifyFirebaseToken, getMembersByGroupId);
+
+// IMPORTANT: this must come before "/:id"
+router.get("/code/:invite_code", verifyFirebaseToken, getGroupByInviteCode);
+
+router.get("/:id/members", verifyFirebaseToken, getMembersByGroupId);
 router.get("/:id", verifyFirebaseToken, getGroupById);
 router.put("/:id", verifyFirebaseToken, updateGroup);
 

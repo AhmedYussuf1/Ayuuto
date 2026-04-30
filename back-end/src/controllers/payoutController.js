@@ -1,73 +1,39 @@
 import pool from "../dbConnection.js";
+import { Payout } from "../model/payout.ts";
+import {
+  hasOwn,
+  isBlank,
+  isValidNonNegativeNumber,
+  toNullableText,
+} from "../utils/requestHelpers.js";
+import { payoutErrorMessages } from "../utils/errorMessages.js";
 
-const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+import { normalizePayoutStatus } from "../utils/enumNormalizers.js";
+import { sendDatabaseError } from "../utils/databaseErrorHandler.js";
+import { mapRowToResponse } from "../utils/responseMappers.js";
 
-const isBlank = (value) =>
-  value === undefined || value === null || String(value).trim() === "";
+const payoutToResponse = (payout) => ({
+  payout_id: payout.getPayoutId(),
+  membership_id: payout.getMembershipId(),
+  amount: payout.getAmount(),
+  payout_date: payout.getPayoutDate(),
+  status: payout.getStatus(),
+  note: payout.getNote(),
+});
 
-const normalizePayoutStatus = (status) => {
-  if (status === undefined) {
-    return undefined;
-  }
+const payoutRowToResponse = (row) => {
+  const payout = Payout.fromDatabase(row);
 
-  if (status === null || String(status).trim() === "") {
-    return null;
-  }
-
-  const normalized = String(status).trim().toUpperCase();
-  return ["PENDING", "PAID", "MISSED", "CANCELED"].includes(normalized)
-    ? normalized
-    : null;
+  return {
+    ...payoutToResponse(payout),
+    member_id: row.member_id,
+    group_id: row.group_id,
+    full_name: row.full_name,
+    email: row.email,
+  };
 };
 
-const toNullableText = (value) => {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (value === null) {
-    return null;
-  }
-
-  const trimmed = String(value).trim();
-  return trimmed === "" ? null : trimmed;
-};
-
-const isValidNonNegativeNumber = (value) => {
-  if (value === undefined || value === null || value === "") {
-    return false;
-  }
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0;
-};
-
-const sendDatabaseError = (res, err, contextMessage) => {
-  console.error(contextMessage, err);
-
-  if (err.code === "23503") {
-    return res.status(400).json({
-      error: "membership_id does not reference an existing membership",
-      detail: err.detail,
-    });
-  }
-
-  if (err.code === "23514") {
-    return res.status(400).json({
-      error: "One or more values do not satisfy the database rules",
-      detail: err.detail || err.message,
-    });
-  }
-
-  if (err.code === "22P02") {
-    return res.status(400).json({
-      error: "One or more values have an invalid format",
-      detail: err.message,
-    });
-  }
-
-  return res.status(500).json({ error: err.message });
-};
+ 
 
 export const createPayout = async (req, res) => {
   try {
@@ -80,6 +46,7 @@ export const createPayout = async (req, res) => {
     }
 
     const normalizedStatus = normalizePayoutStatus(status);
+
     if (status !== undefined && !normalizedStatus) {
       return res.status(400).json({
         error: "status must be PENDING, PAID, MISSED, or CANCELED",
@@ -88,8 +55,20 @@ export const createPayout = async (req, res) => {
 
     const result = await pool.query(
       `
-      INSERT INTO public.payout (membership_id, amount, payout_date, status, note)
-      VALUES ($1, $2, COALESCE($3, CURRENT_DATE), COALESCE($4, 'PENDING'), $5)
+      INSERT INTO public.payout (
+        membership_id,
+        amount,
+        payout_date,
+        status,
+        note
+      )
+      VALUES (
+        $1,
+        $2,
+        COALESCE($3, CURRENT_DATE),
+        COALESCE($4, 'PENDING'),
+        $5
+      )
       RETURNING payout_id, membership_id, amount, payout_date, status, note
       `,
       [
@@ -101,9 +80,16 @@ export const createPayout = async (req, res) => {
       ]
     );
 
-    return res.status(201).json(result.rows[0]);
+    return res
+      .status(201)
+      .json(mapRowToResponse(result.rows[0], Payout, payoutToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Create payout error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Create payout error:",
+      payoutErrorMessages
+    );
   }
 };
 
@@ -135,9 +121,14 @@ export const getPayoutsByGroupId = async (req, res) => {
       [id]
     );
 
-    return res.json(result.rows);
+    return res.json(result.rows.map(payoutRowToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Get payouts by group error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Get payouts by group error:",
+      payoutErrorMessages
+    );
   }
 };
 
@@ -169,9 +160,14 @@ export const getPayoutsByMemberId = async (req, res) => {
       [id]
     );
 
-    return res.json(result.rows);
+    return res.json(result.rows.map(payoutRowToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Get payouts by member error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Get payouts by member error:",
+      payoutErrorMessages
+    );
   }
 };
 
@@ -224,7 +220,9 @@ export const updatePayout = async (req, res) => {
       RETURNING payout_id, membership_id, amount, payout_date, status, note
       `,
       [
-        hasOwn(body, "membership_id") ? body.membership_id : current.membership_id,
+        hasOwn(body, "membership_id")
+          ? body.membership_id
+          : current.membership_id,
         hasOwn(body, "amount") ? body.amount : current.amount,
         hasOwn(body, "payout_date") ? body.payout_date : current.payout_date,
         hasOwn(body, "status") ? normalizedStatus : current.status,
@@ -233,8 +231,13 @@ export const updatePayout = async (req, res) => {
       ]
     );
 
-    return res.json(result.rows[0]);
+    return res.json(mapRowToResponse(result.rows[0], Payout, payoutToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Update payout error:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Update payout error:",
+      payoutErrorMessages
+    );
   }
 };

@@ -1,31 +1,35 @@
-import type { Id, ISODate, Money } from "./types";
-import  type { Member } from "./member";
-
+import type { Id, ISODate, Money, PayoutStatus } from "./types";
 
 export class Payout {
   private _payoutId: Id;
-  private _payTo: Member;
+  private _membershipId: Id;
   private _amount: Money;
   private _payoutDate: ISODate;
+  private _status: PayoutStatus;
+  private _note: string | null;
 
   constructor(
     payoutId: Id,
-    payTo: Member,
+    membershipId: Id,
     amount: Money,
-    payoutDate: ISODate
+    payoutDate: ISODate,
+    status: PayoutStatus,
+    note: string | null
   ) {
     this._payoutId = payoutId;
-    this._payTo = payTo;
+    this._membershipId = membershipId;
     this._amount = amount;
     this._payoutDate = payoutDate;
+    this._status = status;
+    this._note = note;
   }
 
   getPayoutId(): Id {
     return this._payoutId;
   }
 
-  getPayTo(): Member {
-    return this._payTo;
+  getMembershipId(): Id {
+    return this._membershipId;
   }
 
   getAmount(): Money {
@@ -34,5 +38,31 @@ export class Payout {
 
   getPayoutDate(): ISODate {
     return this._payoutDate;
+  }
+
+  getStatus(): PayoutStatus {
+    return this._status;
+  }
+
+  getNote(): string | null {
+    return this._note;
+  }
+
+  static fromDatabase(row: {
+    payout_id: Id;
+    membership_id: Id;
+    amount: Money;
+    payout_date: ISODate;
+    status: PayoutStatus;
+    note: string | null;
+  }): Payout {
+    return new Payout(
+      row.payout_id,
+      row.membership_id,
+      row.amount,
+      row.payout_date,
+      row.status,
+      row.note
+    );
   }
 }

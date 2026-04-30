@@ -1,89 +1,52 @@
 import pool from "../dbConnection.js";
+import { Membership } from "../model/membership.ts";
+import {
+  hasOwn,
+  isBlank,
+  normalizePositiveInteger,
+} from "../utils/requestHelpers.js";
+ import { groupErrorMessages } from "../utils/errorMessages.js";
+ import  {sendDatabaseError}  from  "../utils/databaseErrorHandler.js";
+   
+import {
+  normalizeRole,
+  normalizeMembershipStatus,
+} from "../utils/enumNormalizers.js";
+ import { mapRowToResponse } from "../utils/responseMappers.js";
 
-const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+const membershipToResponse = (membership) => ({
+  membership_id: membership.getMembershipId(),
+  member_id: membership.getMemberId(),
+  group_id: membership.getGroupId(),
+  role: membership.getRole(),
+  status: membership.getStatus(),
+  payout_position: membership.getPayoutPosition(),
+  joined_date: membership.getJoinedDate(),
+  left_date: membership.getLeftDate(),
+});
 
-const isBlank = (value) =>
-  value === undefined || value === null || String(value).trim() === "";
+const membershipRowToResponse = (row) => {
+  const membership = Membership.fromDatabase(row);
 
-const normalizeRole = (role) => {
-  if (role === undefined) {
-    return undefined;
-  }
-
-  if (role === null || String(role).trim() === "") {
-    return null;
-  }
-
-  const normalized = String(role).trim().toUpperCase();
-  return ["ADMIN", "MEMBER"].includes(normalized) ? normalized : null;
+  return {
+    ...membershipToResponse(membership),
+    full_name: row.full_name,
+    email: row.email,
+    group_name: row.group_name,
+    start_cycle_date: row.start_cycle_date,
+    notes: row.notes,
+    created_at: row.created_at,
+  };
 };
 
-const normalizePositiveInteger = (value) => {
-  if (value === undefined) {
-    return undefined;
-  }
 
-  if (value === null || value === "") {
-    return null;
-  }
-
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
-};
-
-const sendDatabaseError = (res, err, contextMessage) => {
-  console.error(contextMessage, err);
-
-  if (err.code === "23503") {
-    return res.status(400).json({
-      error: "member_id or group_id does not reference an existing record",
-      detail: err.detail,
-    });
-  }
-
-  if (err.code === "23505") {
-    if (err.constraint === "uq_membership_member_group") {
-      return res.status(409).json({
-        error: "That member is already in this group",
-        detail: err.detail,
-      });
-    }
-
-    if (err.constraint === "uq_active_payout_position_per_group") {
-      return res.status(409).json({
-        error: "That payout_position is already assigned to an active member in this group",
-        detail: err.detail,
-      });
-    }
-
-    return res.status(409).json({
-      error: "This membership conflicts with an existing record",
-      detail: err.detail,
-    });
-  }
-
-  if (err.code === "23514") {
-    return res.status(400).json({
-      error: "One or more values do not satisfy the database rules",
-      detail: err.detail || err.message,
-    });
-  }
-
-  if (err.code === "22P02") {
-    return res.status(400).json({
-      error: "One or more values have an invalid format",
-      detail: err.message,
-    });
-  }
-
-  return res.status(500).json({ error: err.message });
-};
 
 export const createMembership = async (req, res) => {
   const {
     member_id,
     group_id,
     role,
+    status,
     payout_position,
     joined_date,
     left_date,
@@ -96,14 +59,29 @@ export const createMembership = async (req, res) => {
   }
 
   const normalizedRole = normalizeRole(role);
+
   if (role !== undefined && !normalizedRole) {
     return res.status(400).json({
       error: "role must be ADMIN or MEMBER",
     });
   }
 
+  const normalizedStatus = normalizeMembershipStatus(status);
+
+  if (status !== undefined && !normalizedStatus) {
+    return res.status(400).json({
+      error: "status must be PENDING, APPROVED, or REJECTED",
+    });
+  }
+
   const normalizedPayoutPosition = normalizePositiveInteger(payout_position);
-  if (payout_position !== undefined && payout_position !== null && payout_position !== "" && !normalizedPayoutPosition) {
+
+  if (
+    payout_position !== undefined &&
+    payout_position !== null &&
+    payout_position !== "" &&
+    !normalizedPayoutPosition
+  ) {
     return res.status(400).json({
       error: "payout_position must be a positive integer",
     });
@@ -116,6 +94,7 @@ export const createMembership = async (req, res) => {
         member_id,
         group_id,
         role,
+        status,
         payout_position,
         joined_date,
         left_date
@@ -124,25 +103,42 @@ export const createMembership = async (req, res) => {
         $1,
         $2,
         COALESCE($3, 'MEMBER'),
-        $4,
-        COALESCE($5, CURRENT_DATE),
-        $6
+        COALESCE($4, 'PENDING'),
+        $5,
+        COALESCE($6, CURRENT_DATE),
+        $7
       )
-      RETURNING membership_id, member_id, group_id, role, payout_position, joined_date, left_date
+      RETURNING
+        membership_id,
+        member_id,
+        group_id,
+        role,
+        status,
+        payout_position,
+        joined_date,
+        left_date
       `,
       [
         member_id,
         group_id,
         normalizedRole ?? null,
+        normalizedStatus ?? null,
         normalizedPayoutPosition ?? null,
         joined_date || null,
         left_date || null,
       ]
     );
 
-    return res.status(201).json(result.rows[0]);
+    return res
+      .status(201)
+      .json(mapRowToResponse(result.rows[0], Membership, membershipToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Error creating membership:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Error creating membership:",
+      membershipErrorMessages
+    );
   }
 };
 
@@ -157,6 +153,7 @@ export const getMembershipsByGroupId = async (req, res) => {
         ms.member_id,
         ms.group_id,
         ms.role,
+        ms.status,
         ms.payout_position,
         ms.joined_date,
         ms.left_date,
@@ -166,14 +163,22 @@ export const getMembershipsByGroupId = async (req, res) => {
       JOIN public.member m
         ON ms.member_id = m.member_id
       WHERE ms.group_id = $1
-      ORDER BY ms.left_date NULLS FIRST, ms.payout_position NULLS LAST, ms.membership_id
+      ORDER BY
+        ms.left_date NULLS FIRST,
+        ms.payout_position NULLS LAST,
+        ms.membership_id
       `,
       [id]
     );
 
-    return res.json(result.rows);
+    return res.json(result.rows.map(membershipRowToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Error fetching memberships by group:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Error fetching memberships by group:",
+      membershipErrorMessages
+    );
   }
 };
 
@@ -188,6 +193,7 @@ export const getMembershipsByMemberId = async (req, res) => {
         ms.member_id,
         ms.group_id,
         ms.role,
+        ms.status,
         ms.payout_position,
         ms.joined_date,
         ms.left_date,
@@ -204,9 +210,14 @@ export const getMembershipsByMemberId = async (req, res) => {
       [id]
     );
 
-    return res.json(result.rows);
+    return res.json(result.rows.map(membershipRowToResponse));
   } catch (err) {
-    return sendDatabaseError(res, err, "Error fetching memberships by member:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Error fetching memberships by member:",
+      membershipErrorMessages
+    );
   }
 };
 
@@ -217,7 +228,15 @@ export const updateMembership = async (req, res) => {
   try {
     const existing = await pool.query(
       `
-      SELECT membership_id, member_id, group_id, role, payout_position, joined_date, left_date
+      SELECT
+        membership_id,
+        member_id,
+        group_id,
+        role,
+        status,
+        payout_position,
+        joined_date,
+        left_date
       FROM public.membership
       WHERE membership_id = $1
       `,
@@ -230,10 +249,23 @@ export const updateMembership = async (req, res) => {
 
     const current = existing.rows[0];
 
-    const normalizedRole = hasOwn(body, "role") ? normalizeRole(body.role) : undefined;
+    const normalizedRole = hasOwn(body, "role")
+      ? normalizeRole(body.role)
+      : undefined;
+
     if (hasOwn(body, "role") && !normalizedRole) {
       return res.status(400).json({
         error: "role must be ADMIN or MEMBER",
+      });
+    }
+
+    const normalizedStatus = hasOwn(body, "status")
+      ? normalizeMembershipStatus(body.status)
+      : undefined;
+
+    if (hasOwn(body, "status") && !normalizedStatus) {
+      return res.status(400).json({
+        error: "status must be PENDING, APPROVED, or REJECTED",
       });
     }
 
@@ -257,14 +289,24 @@ export const updateMembership = async (req, res) => {
       UPDATE public.membership
       SET
         role = $1,
-        payout_position = $2,
-        joined_date = $3,
-        left_date = $4
-      WHERE membership_id = $5
-      RETURNING membership_id, member_id, group_id, role, payout_position, joined_date, left_date
+        status = $2,
+        payout_position = $3,
+        joined_date = $4,
+        left_date = $5
+      WHERE membership_id = $6
+      RETURNING
+        membership_id,
+        member_id,
+        group_id,
+        role,
+        status,
+        payout_position,
+        joined_date,
+        left_date
       `,
       [
         hasOwn(body, "role") ? normalizedRole : current.role,
+        hasOwn(body, "status") ? normalizedStatus : current.status,
         hasOwn(body, "payout_position")
           ? normalizedPayoutPosition
           : current.payout_position,
@@ -274,8 +316,15 @@ export const updateMembership = async (req, res) => {
       ]
     );
 
-    return res.json(result.rows[0]);
+    return res.json(
+      mapRowToResponse(result.rows[0], Membership, membershipToResponse)
+    );
   } catch (err) {
-    return sendDatabaseError(res, err, "Error updating membership:");
+    return sendDatabaseError(
+      res,
+      err,
+      "Error updating membership:",
+      membershipErrorMessages
+    );
   }
 };
