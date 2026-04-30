@@ -165,10 +165,15 @@ export default function ViewGroupPage() {
         <Col>
           <h1 className="page-title mb-1">{group.group_name}</h1>
 
-          <p className="page-subtitle mb-2">
-            Group ID / Join Code: <strong>{group.group_id}</strong>
+          <p className="page-subtitle mb-1">
+            Group ID: <strong>{group.group_id}</strong>
           </p>
 
+          {isAdmin && (
+            <p className="page-subtitle mb-2">
+              Invite Code: <strong>{group.invite_code || "Not available"}</strong>
+            </p>
+          )}
           {group.notes && <p className="mb-0">{group.notes}</p>}
         </Col>
 
@@ -276,12 +281,14 @@ export default function ViewGroupPage() {
           <h2 className="page-title h4">Members</h2>
 
           <ListGroup variant="flush">
-            {members?.map((member) => (
-              <ListGroup.Item
-                key={member.membership_id}
-                className="d-flex justify-content-between align-items-center"
-              >
-                <div>
+        {members
+          ?.filter((member) => (member.status || "APPROVED") === "APPROVED")
+          .map((member) => (
+            <ListGroup.Item
+              key={member.membership_id}
+              className="d-flex justify-content-between align-items-center"
+            >
+                      <div>
                   <strong>{member.full_name || "Unnamed Member"}</strong>
                   <div className="page-subtitle small">{member.email}</div>
                 </div>
