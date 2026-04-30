@@ -1,9 +1,13 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import useUser from "../logicCode/useUser";
+import { auth } from "../logicCode/config";
 import "../css/create-group.css";
 
 export default function CreateGroupPage() {
   const navigate = useNavigate();
+  const { user, isLoading } = useUser();
 
   const [formData, setFormData] = useState({
     groupName: "",
@@ -13,7 +17,8 @@ export default function CreateGroupPage() {
     notes: "",
   });
 
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,23 +29,31 @@ export default function CreateGroupPage() {
     });
   };
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/login");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.groupName.trim()) {
-      alert("Please enter a group name");
-      return;
-    }
-
-    if (!formData.startDate) {
-      alert("Please select a start date");
-      return;
-    }
-
     try {
-      setLoading(true);
+      setSaving(true);
+      setError("");
 
-      const token = localStorage.getItem("token");
+      if (!user) {
+        throw new Error("You must be logged in to create a group");
+      }
+
+      const payload = {
+        group_name: formData.groupName.trim(),
+        contribution_amount: Number(formData.contributionAmount),
+        start_cycle_date: formData.startDate,
+        frequency: formData.frequency,
+        notes: formData.notes,
+      };
+
+      const token = await user.getIdToken();
 
       const response = await fetch("http://localhost:3001/group", {
         method: "POST",
@@ -48,10 +61,7 @@ export default function CreateGroupPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          group_name: formData.groupName,
-          start_cycle_date: formData.startDate,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -61,19 +71,17 @@ export default function CreateGroupPage() {
       }
 
       alert("Group created successfully");
-
-      if (data.group_id) {
-        navigate(`/group/${data.group_id}`);
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.error("Create group error:", error);
-      alert(error.message || "Something went wrong");
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className="create-group-page">
@@ -82,7 +90,7 @@ export default function CreateGroupPage() {
 
         <div className="create-group-nav-links">
           <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate("/login")}>Logout</button>
+          <button onClick={handleLogout}>Logout</button>
         </div>
       </nav>
 
@@ -93,12 +101,15 @@ export default function CreateGroupPage() {
         </div>
 
         <form className="create-group-form" onSubmit={handleSubmit}>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
           <label>Group Name</label>
           <input
             type="text"
             name="groupName"
             value={formData.groupName}
             onChange={handleChange}
+            required
           />
 
           <label>Contribution Amount</label>
@@ -107,6 +118,8 @@ export default function CreateGroupPage() {
             name="contributionAmount"
             value={formData.contributionAmount}
             onChange={handleChange}
+            min="0"
+            required
           />
 
           <label>Start Date</label>
@@ -115,6 +128,7 @@ export default function CreateGroupPage() {
             name="startDate"
             value={formData.startDate}
             onChange={handleChange}
+            required
           />
 
           <label>Frequency</label>
@@ -122,6 +136,7 @@ export default function CreateGroupPage() {
             name="frequency"
             value={formData.frequency}
             onChange={handleChange}
+            required
           >
             <option value="">Select</option>
             <option value="Weekly">Weekly</option>
@@ -140,13 +155,12 @@ export default function CreateGroupPage() {
               type="button"
               className="cancel-btn"
               onClick={() => navigate("/dashboard")}
-              disabled={loading}
             >
               Cancel
             </button>
 
-            <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? "Creating..." : "Create Group"}
+            <button type="submit" className="submit-btn" disabled={saving}>
+              {saving ? "Creating..." : "Create Group"}
             </button>
           </div>
         </form>

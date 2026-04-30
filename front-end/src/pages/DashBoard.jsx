@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react";
 import Person2Icon from "@mui/icons-material/Person2";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import useUser from "../logicCode/useUser";
 import { auth } from "../logicCode/config";
 import "../css/dashboard.css";
@@ -11,71 +11,49 @@ export default function DashBoard() {
   const navigate = useNavigate();
 
   const [groups, setGroups] = useState([]);
-  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const handleLogout = async () => {
     await signOut(auth);
-    localStorage.removeItem("token");
     navigate("/login");
   };
 
   useEffect(() => {
-    const fetchDashboardGroups = async () => {
+    const fetchGroups = async () => {
       try {
-        const token = localStorage.getItem("token");
+        if (!user) return;
 
-        const memberRes = await fetch("http://localhost:3001/member/me", {
+        setGroupsLoading(true);
+        setError("");
+
+        const token = await user.getIdToken();
+
+        const response = await fetch("http://localhost:3001/group", {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const memberData = await memberRes.json();
+        const data = await response.json();
 
-        if (!memberRes.ok) {
-          throw new Error(memberData.error || "Failed to get current member");
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch groups");
         }
 
-        const memberId = memberData.member_id;
-
-        const membershipRes = await fetch(
-          `http://localhost:3001/membership/member/${memberId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const membershipData = await membershipRes.json();
-
-        if (!membershipRes.ok) {
-          throw new Error(
-            membershipData.error || "Failed to get memberships"
-          );
-        }
-
-        const formattedGroups = membershipData.map((group) => ({
-          id: group.group_id,
-          name: group.group_name,
-          amount: "Not set yet",
-          status: group.left_date ? "Inactive" : "Active",
-          nextPayout: "Not available",
-        }));
-
-        setGroups(formattedGroups);
-      } catch (error) {
-        console.error("Dashboard error:", error);
-        alert(error.message || "Something went wrong");
+        setGroups(data);
+      } catch (err) {
+        setError(err.message);
       } finally {
-        setDashboardLoading(false);
+        setGroupsLoading(false);
       }
     };
 
-    fetchDashboardGroups();
-  }, []);
+    fetchGroups();
+  }, [user]);
 
-  if (isLoading || dashboardLoading) return <p>Loading...</p>;
+  if (isLoading) return <p>Loading...</p>;
 
   return (
     <div className="dashboard-page">
@@ -124,57 +102,71 @@ export default function DashBoard() {
 
           <div className="stat-card">
             <h3>Next Payout</h3>
-            <p>{groups.length > 0 ? groups[0].nextPayout : "N/A"}</p>
+            <p>-</p>
           </div>
 
           <div className="stat-card">
             <h3>Total Contributions</h3>
-            <p>Not available</p>
+            <p>-</p>
           </div>
         </div>
 
         <div className="dashboard-main-grid">
           <section className="dashboard-section">
-            <h2>Your Groups</h2>
+            <h2>All Groups</h2>
+
+            {groupsLoading && <p>Loading groups...</p>}
+
+            {error && <p style={{ color: "red" }}>{error}</p>}
+
+            {!groupsLoading && !error && groups.length === 0 && (
+              <p>No groups found.</p>
+            )}
 
             <div className="groups-list">
-              {groups.length > 0 ? (
-                groups.map((group) => (
-                  <div className="group-card" key={group.id}>
-                    <div className="group-card-top">
-                      <div>
-                        <h3>{group.name}</h3>
-                        <p>{group.amount}</p>
-                      </div>
+              {groups.map((group) => (
+                <div className="group-card" key={group.group_id}>
+                  <div className="group-card-top">
+                    <div>
+                      <h3>{group.group_name}</h3>
 
-                      <span
-                        className={
-                          group.status === "Active"
-                            ? "status-badge active"
-                            : "status-badge pending"
-                        }
-                      >
-                        {group.status}
-                      </span>
+                      <p>
+                        {group.payout_cycle?.contribution_amount
+                          ? `$${group.payout_cycle.contribution_amount} / ${group.payout_cycle.frequency}`
+                          : "No payout cycle"}
+                      </p>
+
+                      <p>Members: {group.member_count}</p>
                     </div>
 
-                    <div className="group-card-bottom">
-                      <span>Next payout: {group.nextPayout}</span>
-
-                      <button
-                        className="view-btn"
-                        onClick={() => navigate(`/group/${group.id}`)}
-                      >
-                        View Group
-                      </button>
-                    </div>
+                    <span
+                      className={
+                        group.payout_cycle?.status === "ACTIVE"
+                          ? "status-badge active"
+                          : "status-badge pending"
+                      }
+                    >
+                      {group.payout_cycle?.status || "No Status"}
+                    </span>
                   </div>
-                ))
-              ) : (
-                <div className="activity-card">
-                  <p>You are not in any groups yet.</p>
+
+                  <div className="group-card-bottom">
+                    <span>
+                      Start date:{" "}
+                      {group.start_cycle_date
+                        ? new Date(group.start_cycle_date).toLocaleDateString()
+                        : "Not set"}
+                    </span>
+
+                    <button
+                      className="view-btn"
+                      onClick={() => navigate(`/group/${group.group_id}`)}
+                    >
+                      View Group
+                    </button>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </section>
 
@@ -182,15 +174,15 @@ export default function DashBoard() {
             <h2>Upcoming Activity</h2>
 
             <div className="activity-card">
-              <p>Your real group activity will appear here later.</p>
+              <p>Select a group to view its activity.</p>
             </div>
 
             <div className="activity-card">
-              <p>Create or join a group to get started.</p>
+              <p>Create or join a group to start tracking contributions.</p>
             </div>
 
             <div className="activity-card">
-              <p>Contribution and payout updates can be added next.</p>
+              <p>Group payout details will appear inside each group page.</p>
             </div>
           </section>
         </div>

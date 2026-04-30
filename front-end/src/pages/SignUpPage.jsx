@@ -38,7 +38,6 @@ export default function SignUpPage() {
 
       const firebaseUser = userCredential.user;
       const token = await firebaseUser.getIdToken();
-      localStorage.setItem("token", token);
 
       const response = await fetch("http://localhost:3001/member", {
         method: "POST",
