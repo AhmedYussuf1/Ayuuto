@@ -1,9 +1,63 @@
+@import "./colors.css";
+
+/* 
+  Global styles that apply to the whole app.
+  Keeps everything consistent (spacing, font, background).
+*/
+
+* {
+  box-sizing: border-box; /* makes sizing easier to control */
+}
+
+body {
+  margin: 0;
+  background-color: var(--warm-beige);
+  color: var(--dark-text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* small reusable logo styling */
 .logo {
-   
+  max-height: 50px;
+  width: auto;
+}
 
+/* 
+  Reusable button styles
+  Instead of making new button styles on every page,
+  I created these so they can be reused anywhere.
+*/
 
-    max-height: 50px;
-     width: auto;
+.primary-btn {
+  background: var(--emerald-green);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
 
+.secondary-btn {
+  background: var(--teal);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
 
+.accent-btn {
+  background: var(--coral-accent);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* small hover effect so buttons feel interactive */
+.primary-btn:hover,
+.secondary-btn:hover,
+.accent-btn:hover {
+  opacity: 0.9;
 }

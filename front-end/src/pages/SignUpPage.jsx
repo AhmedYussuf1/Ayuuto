@@ -1,135 +1,217 @@
-import Form from "react-bootstrap/Form";
-import { useNavigate, Link } from "react-router-dom";
-import BackBtn from "../ui_components/BackBtn";
-import WarningIcon from "@mui/icons-material/Warning";
 import { useState } from "react";
+import { Alert, Button, Card, Container, Form } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+
+// Firebase account creation function.
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../logicCode/config";  
+import { auth } from "../logicCode/config";
+
+/*
+  SignUpPage.jsx
+
+  Purpose:
+  This page creates a new user account.
+
+  Important design idea:
+  Firebase handles the login account and password.
+  PostgreSQL/backend handles the app member profile.
+
+  This means:
+  - Firebase stores authentication info
+  - Backend stores member info like full_name, email, firebase_uid
+
+  Flow:
+  1. User enters name, email, password, confirm password.
+  2. Frontend checks password and confirm password match.
+  3. Firebase creates the auth account.
+  4. Firebase gives us a token.
+  5. We call POST /member.
+  6. Backend creates member row in PostgreSQL.
+  7. Save member_id.
+  8. Go to dashboard.
+*/
 
 export default function SignUpPage() {
   const navigate = useNavigate();
 
+  // Form values typed by the user.
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+
+  // Password values. Confirm password is only checked on frontend.
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // UI states.
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function createAccount(e) {
+  const handleSignUp = async (e) => {
     e.preventDefault();
-    setError("");
-
-    if (!fullName.trim()) {
-      setError("Full name is required");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Password and confirm password do not match");
-      return;
-    }
 
     try {
+      setLoading(true);
+      setError("");
+
+      /*
+        Frontend validation:
+        This prevents creating account if user mistyped password.
+      */
+      if (password !== confirmPassword) {
+        throw new Error("Passwords do not match.");
+      }
+
+      /*
+        Step 1:
+        Create account in Firebase.
+        Firebase stores the password securely.
+      */
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      const firebaseUser = userCredential.user;
-      const token = await firebaseUser.getIdToken();
+      /*
+        Step 2:
+        Get Firebase token so backend can verify this user.
+      */
+      const token = await userCredential.user.getIdToken();
 
-      const response = await fetch("http://localhost:3001/member", {
+      // Save token for later protected backend requests.
+      localStorage.setItem("token", token);
+
+      /*
+        Step 3:
+        Create the member in our backend database.
+
+        Backend route:
+        POST /member
+
+        We send:
+        - email
+        - full_name
+
+        We do NOT send the password.
+        We do NOT manually send firebase_uid.
+        Backend gets firebase_uid from the verified Firebase token.
+      */
+      const memberResponse = await fetch("http://localhost:3001/member", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          email: firebaseUser.email,
+          email,
           full_name: fullName,
         }),
       });
 
-      const data = await response.json();
+      const memberData = await memberResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to save user in database");
+      if (!memberResponse.ok) {
+        throw new Error(
+          memberData.error ||
+            "Firebase account was created, but backend member creation failed."
+        );
       }
 
-      navigate("/DashBoard");
-    } catch (error) {
-      setError(error.message);
+      /*
+        Step 4:
+        Save database member_id.
+
+        This is needed because the backend uses member_id
+        for memberships, contributions, and payouts.
+      */
+      localStorage.setItem("member_id", memberData.member_id);
+
+      // Step 5: Send user to dashboard.
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Signup failed.");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="container">
-      <BackBtn />
+    <div className="app-page d-flex align-items-center">
+      <Container style={{ maxWidth: "560px" }}>
+        <Card className="page-card p-4">
+          <Card.Body>
+            <h1 className="page-title text-center mb-2">Create Account</h1>
 
-      {error && (
-        <p className="alert alert-warning d-flex align-items-center">
-          <WarningIcon
-            className="bi flex-shrink-0 me-2"
-            sx={{ color: "red" }}
-          />
-          {error}
-        </p>
-      )}
+            <p className="page-subtitle text-center mb-4">
+              Start managing your community savings group.
+            </p>
 
-      <Form onSubmit={createAccount}>
-        <Form.Text className="text-muted">
-          Join Ayuuto and start saving together
-        </Form.Text>
+            {error && (
+              <Alert variant="danger" className="alert-clean">
+                {error}
+              </Alert>
+            )}
 
-        <Form.Group className="mb-3" controlId="fullName">
-          <Form.Label>Full Name</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="First Last"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-        </Form.Group>
+            <Form onSubmit={handleSignUp}>
+              <Form.Group className="mb-3">
+                <Form.Label>Full Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={fullName}
+                  placeholder="Enter full name"
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </Form.Group>
 
-        <Form.Group className="mb-3" controlId="formBasicEmail">
-          <Form.Label>Email address</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder="Enter email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={email}
+                  placeholder="Enter email"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </Form.Group>
 
-        <Form.Group className="mb-3" controlId="formBasicPassword">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Create Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={password}
+                  placeholder="Enter password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </Form.Group>
 
-        <Form.Group className="mb-3" controlId="passwordConfirmation">
-          <Form.Label>Password Confirmation</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Re-enter password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        </Form.Group>
+              <Form.Group className="mb-4">
+                <Form.Label>Confirm Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={confirmPassword}
+                  placeholder="Confirm password"
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </Form.Group>
 
-        <button className="container-lg btn mb-3 btn-primary" type="submit">
-          Submit
-        </button>
-      </Form>
+              <Button
+                type="submit"
+                className="btn-ayuuto-primary w-100"
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Create Account"}
+              </Button>
+            </Form>
 
-      <Link to="/login" className="btn btn-outline">
-        Already have an account? Login
-      </Link>
+            <p className="text-center mt-4 mb-0">
+              Already have an account? <Link to="/login">Log in</Link>
+            </p>
+          </Card.Body>
+        </Card>
+      </Container>
     </div>
   );
 }

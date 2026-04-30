@@ -1,0 +1,105 @@
+@import "./colors.css";
+
+/*
+  This page is for approving or rejecting pending members.
+  Each pending member is shown as a separate card so it is easy to review.
+*/
+
+.approve-members-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+  color: var(--dark-text);
+}
+
+/* Top navbar */
+.approve-members-nav {
+  background: var(--primary-navy);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* AYUUTO/logo text */
+.approve-members-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Main content wrapper */
+.approve-members-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* Page heading */
+.approve-members-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.approve-members-header h1 {
+  color: var(--primary-navy);
+}
+
+/* White container holding all pending requests */
+.pending-member-list {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* Individual pending member row/card */
+.pending-member-card {
+  background: var(--light-gray);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Member name/title */
+.pending-member-info h3 {
+  color: var(--primary-navy);
+  margin: 0;
+}
+
+/* Smaller details under the name */
+.pending-member-info p {
+  margin: 4px 0 0;
+}
+
+/* Holds approve/reject buttons */
+.pending-member-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Approve means positive, so green */
+.approve-btn {
+  background: var(--emerald-green);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Reject uses coral because it needs attention */
+.reject-btn {
+  background: var(--coral-accent);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.approve-btn:hover,
+.reject-btn:hover {
+  opacity: 0.9;
+}

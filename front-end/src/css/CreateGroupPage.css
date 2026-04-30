@@ -1,49 +1,35 @@
+@import "./colors.css";
+
+/* 
+  Page for creating a group.
+  Uses a centered form card for clarity.
+*/
+
 .create-group-page {
   min-height: 100vh;
-  background: #F5EFE6; /* beige */
-  color: #333333;
+  background: var(--warm-beige);
+  color: var(--dark-text);
 }
 
-/* NAVBAR */
+/* navbar */
 .create-group-nav {
-  background: #1F2A44;
+  background: var(--primary-navy);
   color: white;
   padding: 16px 32px;
   display: flex;
   justify-content: space-between;
 }
 
-.create-group-logo {
-  font-weight: bold;
-}
-
-.create-group-nav-links {
-  display: flex;
-  gap: 10px;
-}
-
-.create-group-nav-links button {
-  background: none;
-  border: none;
-  color: white;
-}
-
-/* MAIN */
+/* main container */
 .create-group-container {
   max-width: 700px;
   margin: auto;
   padding: 40px;
 }
 
-/* HEADER */
-.create-group-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-/* FORM */
+/* form card */
 .create-group-form {
-  background: #E6E8EC;
+  background: var(--light-gray);
   padding: 25px;
   border-radius: 12px;
   display: flex;
@@ -51,6 +37,7 @@
   gap: 10px;
 }
 
+/* inputs */
 .create-group-form input,
 .create-group-form select,
 .create-group-form textarea {
@@ -59,25 +46,21 @@
   border: 1px solid #ccc;
 }
 
-/* BUTTONS */
+/* buttons row */
 .form-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
 
+/* cancel button */
 .cancel-btn {
-  background: #2FA6A6;
+  background: var(--teal);
   color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
 }
 
+/* submit button */
 .submit-btn {
-  background: #1FA971;
+  background: var(--emerald-green);
   color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
 }

@@ -1,172 +1,299 @@
-// this lets me move between pages
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  ListGroup,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
-// this is the css for this page
-import "../css/view-group.css";
+/*
+  ViewGroupPage.jsx
 
-// this is the view group page
+  Purpose:
+  This page shows one group.
+
+  Backend route used:
+  GET /group/:id
+
+  This page also checks the logged-in user's membership role so the UI can show:
+  - normal member actions
+  - admin-only actions
+
+  Member actions:
+  - Make Contribution
+  - View Contributions
+  - View Payouts
+
+  Admin actions:
+  - Invite Members
+  - Group Settings
+  - Manage Members
+
+  Important:
+  This is frontend role-based hiding. The backend should still enforce
+  admin permissions in a stronger production version.
+*/
+
 export default function ViewGroupPage() {
   const navigate = useNavigate();
-
-  // this gets the group id from the url like /group/1
   const { id } = useParams();
 
-  // fake group data for now
-  // later this will come from backend using the id
-  const group = {
-    id,
-    name: "Friends Savings",
-    contributionAmount: "$100 / month",
-    cycle: "Monthly",
-    status: "Active",
-    nextPayout: "Bryan",
-    totalSaved: "$2,000",
-    inviteCode: "AYU123",
-    members: [
-      { name: "Ahmed", paymentStatus: "Paid", payoutPosition: "#1" },
-      { name: "Bryan", paymentStatus: "Paid", payoutPosition: "#2" },
-      { name: "Mai", paymentStatus: "Pending", payoutPosition: "#3" },
-    ],
-    activity: [
-      "Bryan paid contribution on March 20",
-      "Ahmed payout confirmed on March 22",
-      "Next group due date is March 29",
-    ],
-  };
+  const [groupData, setGroupData] = useState(null);
+  const [currentMembership, setCurrentMembership] = useState(null);
 
-  // this copies the invite code
-  const handleCopyCode = async () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadGroup();
+  }, [id]);
+
+  const loadGroup = async () => {
     try {
-      await navigator.clipboard.writeText(group.inviteCode);
-      alert("Invite code copied");
-    } catch (error) {
-      alert("Could not copy code");
+      setLoading(true);
+      setError("");
+
+      const token = localStorage.getItem("token");
+      const memberId = localStorage.getItem("member_id");
+
+      if (!token || !memberId) {
+        navigate("/login");
+        return;
+      }
+
+      /*
+        First backend call:
+        GET /group/:id
+
+        This returns group details, payout cycle, and members.
+      */
+      const groupResponse = await fetch(`http://localhost:3001/group/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const groupResult = await groupResponse.json();
+
+      if (!groupResponse.ok) {
+        throw new Error(groupResult.error || "Failed to load group.");
+      }
+
+      setGroupData(groupResult);
+
+      /*
+        Second backend call:
+        GET /membership/member/:member_id
+
+        This returns all memberships for the logged-in user.
+        We find the one for this group so we know if they are ADMIN or MEMBER.
+      */
+      const membershipResponse = await fetch(
+        `http://localhost:3001/membership/member/${memberId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const membershipResult = await membershipResponse.json();
+
+      if (!membershipResponse.ok) {
+        throw new Error("Could not load your membership role.");
+      }
+
+      const match = membershipResult.find(
+        (membership) => String(membership.group_id) === String(id)
+      );
+
+      setCurrentMembership(match || null);
+    } catch (err) {
+      setError(err.message || "Group failed to load.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <AppLayout showBack backTo="/dashboard">
+        <div className="text-center py-5">
+          <Spinner animation="border" />
+          <p className="mt-3">Loading group...</p>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppLayout showBack backTo="/dashboard">
+        <Alert variant="danger" className="alert-clean">
+          {error}
+        </Alert>
+      </AppLayout>
+    );
+  }
+
+  if (!groupData) {
+    return (
+      <AppLayout showBack backTo="/dashboard">
+        <Alert variant="warning" className="alert-clean">
+          No group found.
+        </Alert>
+      </AppLayout>
+    );
+  }
+
+  const { group, payout_cycle, members } = groupData;
+
+  /*
+    If role is ADMIN, show admin-only buttons.
+  */
+  const isAdmin = currentMembership?.role === "ADMIN";
+
   return (
-    <div className="view-group-page">
-      {/* NAVBAR */}
-      <nav className="view-group-nav">
-        <div className="view-group-logo">AYUUTO</div>
+    <AppLayout showBack backTo="/dashboard">
+      <Row className="align-items-start mb-4 g-3">
+        <Col>
+          <h1 className="page-title mb-1">{group.group_name}</h1>
 
-        <div className="view-group-nav-links">
-          <button onClick={() => navigate("/dashboard")}>Dashboard</button>
-          <button onClick={() => navigate("/login")}>Logout</button>
-        </div>
-      </nav>
+          <p className="page-subtitle mb-2">
+            Group ID / Join Code: <strong>{group.group_id}</strong>
+          </p>
 
-      {/* MAIN CONTENT */}
-      <div className="view-group-container">
-        {/* top section */}
-        <div className="view-group-header">
-          <div>
-            <h1>{group.name}</h1>
-            <p>
-              Contribution: {group.contributionAmount} | Cycle: {group.cycle} | Status: {group.status}
-            </p>
-          </div>
+          {group.notes && <p className="mb-0">{group.notes}</p>}
+        </Col>
 
-          <button className="back-btn" onClick={() => navigate("/dashboard")}>
-            Back to Dashboard
-          </button>
-        </div>
+        <Col xs="auto">
+          <Badge bg={isAdmin ? "success" : "secondary"} className="fs-6">
+            Your Role: {currentMembership?.role || "Unknown"}
+          </Badge>
+        </Col>
+      </Row>
 
-        {/* stat cards */}
-        <div className="view-group-stats">
-          <div className="group-stat-card">
+      <Row className="g-3 mb-4">
+        <Col md={4}>
+          <div className="stat-box">
             <h3>Members</h3>
-            <p>{group.members.length}</p>
+            <p>{members?.length || 0}</p>
           </div>
+        </Col>
 
-          <div className="group-stat-card">
-            <h3>Next Payout</h3>
-            <p>{group.nextPayout}</p>
+        <Col md={4}>
+          <div className="stat-box">
+            <h3>Frequency</h3>
+            <p>{payout_cycle?.frequency || "N/A"}</p>
           </div>
+        </Col>
 
-          <div className="group-stat-card">
-            <h3>Total Saved</h3>
-            <p>{group.totalSaved}</p>
+        <Col md={4}>
+          <div className="stat-box">
+            <h3>Contribution</h3>
+            <p>${payout_cycle?.contribution_amount || 0}</p>
           </div>
-        </div>
+        </Col>
+      </Row>
 
-        {/* invite section */}
-        <section className="invite-section">
-          <div className="invite-section-text">
-            <h2>Invite Members</h2>
-            <p>Share this private code so invited users can join your group.</p>
-          </div>
+      <Row className="g-3 mb-4">
+        <Col md={6} lg={3}>
+          <Button
+            className="btn-ayuuto-primary w-100"
+            onClick={() => navigate(`/group/${id}/contribution`)}
+          >
+            Make Contribution
+          </Button>
+        </Col>
 
-          <div className="invite-code-box">
-            <span className="invite-code-label">Group Code</span>
-            <div className="invite-code-row">
-              <div className="invite-code-value">{group.inviteCode}</div>
+        <Col md={6} lg={3}>
+          <Button
+            className="btn-ayuuto-secondary w-100"
+            onClick={() => navigate(`/group/${id}/contributions`)}
+          >
+            View Contributions
+          </Button>
+        </Col>
 
-              <button className="copy-btn" onClick={handleCopyCode}>
-                Copy Code
-              </button>
-              
-              <button
-            className="copy-btn"
-            onClick={() => navigate(`/group/${id}/invite`)}
+        <Col md={6} lg={3}>
+          <Button
+            className="btn-ayuuto-secondary w-100"
+            onClick={() => navigate(`/group/${id}/payouts`)}
+          >
+            View Payouts
+          </Button>
+        </Col>
+
+        {isAdmin && (
+          <>
+            <Col md={6} lg={3}>
+              <Button
+                className="btn-ayuuto-accent w-100"
+                onClick={() => navigate(`/group/${id}/invite`)}
               >
-            Manage Invites
-              </button>
-           
-            <button onClick={() => navigate(`/group/${id}/approve-members`)}>
-              Approve Members
-            </button>
+                Invite Members
+              </Button>
+            </Col>
 
-            <button onClick={() => navigate(`/group/${id}/contribute`)}>
-              Make Contribution
-            </button>
+            <Col md={6} lg={3}>
+              <Button
+                variant="dark"
+                className="w-100"
+                onClick={() => navigate(`/group/${id}/settings`)}
+              >
+                Group Settings
+              </Button>
+            </Col>
 
-            <button onClick={() => navigate(`/group/${id}/payouts`)}>
-              View Payouts
-            </button>
+            <Col md={6} lg={3}>
+              <Button
+                variant="dark"
+                className="w-100"
+                onClick={() => navigate(`/group/${id}/manage-members`)}
+              >
+                Manage Members
+              </Button>
+            </Col>
+          </>
+        )}
+      </Row>
 
-            <button onClick={() => navigate(`/group/${id}/settings`)}>
-              Group Settings
-            </button>
-              
-            </div>
-          </div>
-        </section>
+      {!isAdmin && (
+        <Alert variant="info" className="alert-clean">
+          Member view: admin-only actions like inviting members, changing group
+          settings, and managing members are hidden.
+        </Alert>
+      )}
 
-        {/* main grid */}
-        <div className="view-group-grid">
-          {/* members section */}
-          <section className="view-group-section">
-            <h2>Members</h2>
+      <Card className="page-card">
+        <Card.Body>
+          <h2 className="page-title h4">Members</h2>
 
-            <div className="members-list">
-              {group.members.map((member, index) => (
-                <div className="member-card" key={index}>
-                  <div>
-                    <h3>{member.name}</h3>
-                    <p>{member.paymentStatus}</p>
-                  </div>
-
-                  <span className="payout-badge">
-                    Payout Position {member.payoutPosition}
-                  </span>
+          <ListGroup variant="flush">
+            {members?.map((member) => (
+              <ListGroup.Item
+                key={member.membership_id}
+                className="d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  <strong>{member.full_name || "Unnamed Member"}</strong>
+                  <div className="page-subtitle small">{member.email}</div>
                 </div>
-              ))}
-            </div>
-          </section>
 
-          {/* recent activity section */}
-          <section className="view-group-section">
-            <h2>Recent Activity</h2>
-
-            {group.activity.map((item, index) => (
-              <div className="group-activity-card" key={index}>
-                <p>{item}</p>
-              </div>
+                <Badge bg={member.role === "ADMIN" ? "success" : "secondary"}>
+                  {member.role}
+                </Badge>
+              </ListGroup.Item>
             ))}
-          </section>
-        </div>
-      </div>
-    </div>
+          </ListGroup>
+        </Card.Body>
+      </Card>
+    </AppLayout>
   );
 }

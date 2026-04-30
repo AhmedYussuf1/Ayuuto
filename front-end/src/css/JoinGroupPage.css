@@ -1,0 +1,53 @@
+@import "./colors.css";
+
+/* 
+  Join group page uses a simple form layout.
+*/
+
+.join-group-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+}
+
+/* navbar */
+.join-group-nav {
+  background: var(--primary-navy);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* form container */
+.join-group-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 50px 20px;
+}
+
+/* form card */
+.join-group-form {
+  background: var(--light-gray);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* inputs */
+.join-group-form input {
+  padding: 14px;
+  border-radius: 10px;
+}
+
+/* buttons */
+.join-btn {
+  background: var(--coral-accent);
+  color: white;
+}
+
+.back-btn {
+  background: var(--teal);
+  color: white;
+}

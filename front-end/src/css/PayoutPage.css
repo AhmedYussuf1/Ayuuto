@@ -1,0 +1,110 @@
+@import "./colors.css";
+
+/*
+  This page shows payout information for a group.
+  I used summary cards at the top and a list below for payout details.
+*/
+
+.payout-page {
+  min-height: 100vh;
+  background: var(--warm-beige);
+  color: var(--dark-text);
+}
+
+/* Top navbar */
+.payout-nav {
+  background: var(--primary-navy);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* AYUUTO/logo text */
+.payout-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Main content wrapper */
+.payout-container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* Page title area */
+.payout-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.payout-header h1 {
+  color: var(--primary-navy);
+}
+
+/* Summary cards for payout totals/status */
+.payout-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+/* Individual payout summary card */
+.payout-card {
+  background: var(--light-gray);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+}
+
+.payout-card h3 {
+  color: var(--primary-navy);
+}
+
+/* Payout values are green because they represent money/status */
+.payout-card p {
+  color: var(--emerald-green);
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* White list card for payout records */
+.payout-list {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.payout-list h2 {
+  color: var(--primary-navy);
+}
+
+/* Each payout row */
+.payout-item {
+  border-bottom: 1px solid var(--light-gray);
+  padding: 14px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Removes the last border so the list looks cleaner */
+.payout-item:last-child {
+  border-bottom: none;
+}
+
+/* Button for payout actions */
+.payout-btn {
+  background: var(--coral-accent);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.payout-btn:hover {
+  opacity: 0.9;
+}

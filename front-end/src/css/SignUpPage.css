@@ -1,49 +1,50 @@
 @import "./colors.css";
 
-/* 
-  Login page uses a centered card layout.
-  I kept it simple so it's clean and easy to use.
+/*
+  This page controls the Create Account / Sign Up screen.
+  I made it match the login page so both auth pages feel like the same system.
+  The card layout keeps the form centered and easy to read.
 */
 
 body {
   background-color: var(--warm-beige);
 }
 
-/* container around the form */
+/* This wraps the sign up form content inside the card */
 .form-container {
   padding: 20px;
   background-color: var(--light-gray);
   border-radius: 30px;
 }
 
-/* main login card */
+/* Main card that holds the sign up form */
 .card {
   border-radius: 30px;
   width: 70%;
-  margin: 3rem auto; /* centers the card */
+  margin: 3rem auto; /* centers the card on the page */
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
 }
 
-/* input styling */
+/* Keeps the input boxes using the same warm background color */
 .input {
   background-color: var(--warm-beige);
 }
 
-/* login button */
+/* Main sign up button */
 button.btn {
   background-color: var(--emerald-green);
   color: white;
   border: none;
 }
 
-/* hover gives feedback to user */
+/* Gives the button feedback when the user hovers over it */
 button.btn:hover {
   border: 1px solid var(--teal);
   color: var(--emerald-green);
   background-color: white;
 }
 
-/* page title */
+/* Main page heading */
 p.col {
   font-size: 2rem;
   font-weight: bold;
